@@ -1,0 +1,25 @@
+export const DESIGN_TOKENS = {
+  colors: {
+    background: '#F9FAFB',
+    surface: '#FFFFFF',
+    sidebar: '#111827',
+    primary: '#4F46E5',
+    primaryHover: '#4338CA',
+    textPrimary: '#111827',
+    textSecondary: '#6B7280',
+    border: '#E5E7EB',
+    success: '#22C55E',
+    warning: '#F59E0B',
+    danger: '#EF4444',
+    info: '#0EA5E9',
+  },
+  layout: {
+    sidebarWidth: '260px',
+    headerHeight: '64px',
+    contentPadding: '32px',
+    cardRadius: '12px',
+    inputHeight: '40px',
+    buttonHeight: '40px',
+    tableRowHeight: '56px',
+  },
+} as const
