@@ -2,6 +2,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '@/shared/lib/cn'
+import { overlaySurfaces } from '@/shared/lib/overlay-surfaces'
 import { DialogOverlay, DialogPortal } from '@/shared/ui/modal/modal'
 
 interface DrawerProps {
@@ -18,7 +19,8 @@ export function Drawer({ open, title, onClose, children }: DrawerProps) {
         <DialogOverlay />
         <DialogPrimitive.Content
           className={cn(
-            'fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-sm flex-col border-l bg-background p-6 shadow-lg',
+            overlaySurfaces.sheet,
+            'fixed inset-y-0 right-0 h-full w-full max-w-sm border-l border-border p-6',
           )}
         >
           <div className="mb-4 flex items-center justify-between">

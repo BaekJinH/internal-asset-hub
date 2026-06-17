@@ -4,6 +4,7 @@ import { X } from 'lucide-react'
 import type { ComponentPropsWithoutRef, ElementRef, HTMLAttributes, ReactNode } from 'react'
 import { forwardRef } from 'react'
 import { cn } from '@/shared/lib/cn'
+import { overlaySurfaces } from '@/shared/lib/overlay-surfaces'
 
 export const Sheet = DialogPrimitive.Root
 export const SheetTrigger = DialogPrimitive.Trigger
@@ -16,7 +17,7 @@ export const SheetOverlay = forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
-    className={cn('fixed inset-0 z-50 bg-black/60', className)}
+    className={cn(overlaySurfaces.backdrop, className)}
     {...props}
   />
 ))
@@ -33,13 +34,14 @@ export const SheetContent = forwardRef<ElementRef<typeof DialogPrimitive.Content
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          'fixed z-50 flex flex-col border bg-background shadow-lg transition ease-in-out',
+          overlaySurfaces.sheet,
+          'fixed transition ease-in-out',
           side === 'bottom' &&
-            'inset-x-0 bottom-0 max-h-[90vh] rounded-t-xl border-border/80',
+            'inset-x-0 bottom-0 max-h-[90vh] rounded-t-xl border-t border-border',
           side === 'right' &&
-            'inset-y-0 right-0 h-full w-full max-w-md border-l',
+            'inset-y-0 right-0 h-full w-full max-w-md border-l border-border',
           side === 'left' &&
-            'inset-y-0 left-0 h-full w-full max-w-none border-r data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
+            'inset-y-0 left-0 h-full w-full max-w-none border-r border-border data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
           className,
         )}
         {...props}

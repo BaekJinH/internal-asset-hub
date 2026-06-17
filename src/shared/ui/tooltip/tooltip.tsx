@@ -3,6 +3,7 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import type { ComponentPropsWithoutRef, ElementRef, HTMLAttributes } from 'react'
 import { forwardRef } from 'react'
 import { cn } from '@/shared/lib/cn'
+import { overlaySurfaces } from '@/shared/lib/overlay-surfaces'
 
 export const TooltipProvider = TooltipPrimitive.Provider
 export const Tooltip = TooltipPrimitive.Root
@@ -16,10 +17,7 @@ export const TooltipContent = forwardRef<
     <TooltipPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}
-      className={cn(
-        'z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-xs text-popover-foreground shadow-md',
-        className,
-      )}
+      className={cn(overlaySurfaces.tooltip, className)}
       {...props}
     />
   </TooltipPrimitive.Portal>
@@ -30,7 +28,7 @@ export function Kbd({ className, ...props }: HTMLAttributes<HTMLElement>) {
   return (
     <kbd
       className={cn(
-        'pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-border/80 bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground',
+        'pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground',
         className,
       )}
       {...props}

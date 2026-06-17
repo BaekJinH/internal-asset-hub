@@ -9,7 +9,7 @@ export function TagBadge({ className, prefix = '#', children, ...props }: TagBad
   return (
     <span
       className={cn(
-        'inline-flex max-w-[7.5rem] shrink-0 items-center whitespace-nowrap rounded-md border border-border/50 bg-muted/50 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground',
+        'inline-flex max-w-[7.5rem] shrink-0 items-center gap-0.5 whitespace-nowrap rounded-md border border-border/50 bg-muted/50 px-1.5 py-0.5 text-[11px] font-medium leading-none text-muted-foreground',
         className,
       )}
       {...props}

@@ -15,7 +15,7 @@ export const DESIGN_TOKENS = {
     secondaryForeground: '#1e293b',
     accent: '#eef2ff',
     accentForeground: '#4338ca',
-    border: '#e2e8f0',
+    border: '#cbd5e1',
     destructive: '#dc2626',
     sidebar: '#0f172a',
     sidebarForeground: '#e2e8f0',

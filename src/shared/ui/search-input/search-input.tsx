@@ -1,14 +1,20 @@
 import { Search } from 'lucide-react'
-import type { InputHTMLAttributes } from 'react'
-import { Input } from '@/shared/ui/input'
+import { forwardRef, type InputHTMLAttributes } from 'react'
+import { InputGroup, InputGroupIcon, InputGroupInput } from '@/shared/ui/input/input-group'
 
 type SearchInputProps = InputHTMLAttributes<HTMLInputElement>
 
-export function SearchInput(props: SearchInputProps) {
-  return (
-    <div className="relative">
-      <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-      <Input className="pl-9" {...props} />
-    </div>
-  )
-}
+export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <InputGroup className={className}>
+        <InputGroupIcon>
+          <Search aria-hidden />
+        </InputGroupIcon>
+        <InputGroupInput ref={ref} type="search" {...props} />
+      </InputGroup>
+    )
+  },
+)
+
+SearchInput.displayName = 'SearchInput'

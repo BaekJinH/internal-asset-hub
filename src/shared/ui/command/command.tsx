@@ -3,6 +3,7 @@ import { Search } from 'lucide-react'
 import type { ComponentPropsWithoutRef, ElementRef, HTMLAttributes } from 'react'
 import { forwardRef } from 'react'
 import { cn } from '@/shared/lib/cn'
+import { overlaySurfaces } from '@/shared/lib/overlay-surfaces'
 import { Dialog, DialogContent } from '@/shared/ui/modal/modal'
 
 export const Command = forwardRef<
@@ -11,7 +12,10 @@ export const Command = forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive
     ref={ref}
-    className={cn('flex h-full w-full flex-col overflow-hidden rounded-lg bg-popover text-popover-foreground', className)}
+    className={cn(
+      'surface-popover flex h-full w-full flex-col overflow-hidden rounded-md',
+      className,
+    )}
     {...props}
   />
 ))
@@ -21,12 +25,12 @@ export const CommandInput = forwardRef<
   ElementRef<typeof CommandPrimitive.Input>,
   ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
-  <div className="flex items-center border-b border-border/80 px-3" cmdk-input-wrapper="">
-    <Search className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" />
+  <div className="flex h-11 items-center border-b px-3" cmdk-input-wrapper="">
+    <Search className="mr-2 size-4 shrink-0 text-muted-foreground" />
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        'flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
+        'flex h-full w-full border-0 bg-transparent py-0 text-sm leading-none outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
         className,
       )}
       {...props}
@@ -41,7 +45,12 @@ export const CommandList = forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.List
     ref={ref}
-    className={cn('max-h-[320px] overflow-y-auto overflow-x-hidden p-1', className)}
+    className={cn(
+      'max-h-[min(420px,60vh)] overflow-y-auto overflow-x-hidden p-2',
+      '[scrollbar-color:#cbd5e1_#ffffff] [scrollbar-width:thin]',
+      '[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-white',
+      className,
+    )}
     {...props}
   />
 ))
@@ -50,8 +59,12 @@ CommandList.displayName = CommandPrimitive.List.displayName
 export const CommandEmpty = forwardRef<
   ElementRef<typeof CommandPrimitive.Empty>,
   ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
->((props, ref) => (
-  <CommandPrimitive.Empty ref={ref} className="py-6 text-center text-sm text-muted-foreground" {...props} />
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.Empty
+    ref={ref}
+    className={cn('py-8 text-center text-sm text-muted-foreground', className)}
+    {...props}
+  />
 ))
 CommandEmpty.displayName = CommandPrimitive.Empty.displayName
 
@@ -61,7 +74,10 @@ export const CommandGroup = forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.Group
     ref={ref}
-    className={cn('overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground', className)}
+    className={cn(
+      'overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground',
+      className,
+    )}
     {...props}
   />
 ))
@@ -91,7 +107,12 @@ export const CommandItem = forwardRef<
 CommandItem.displayName = CommandPrimitive.Item.displayName
 
 export function CommandShortcut({ className, ...props }: HTMLAttributes<HTMLSpanElement>) {
-  return <span className={cn('ml-auto text-xs tracking-widest text-muted-foreground', className)} {...props} />
+  return (
+    <span
+      className={cn('ml-auto text-xs tracking-widest text-muted-foreground', className)}
+      {...props}
+    />
+  )
 }
 
 interface CommandDialogProps {
@@ -103,7 +124,14 @@ interface CommandDialogProps {
 export function CommandDialog({ open, onOpenChange, children }: CommandDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden p-0 shadow-lg sm:max-w-lg [&>button]:hidden">
+      <DialogContent
+        showCloseButton={false}
+        className={cn(
+          'surface-dialog overflow-hidden rounded-xl p-0 shadow-2xl',
+          'w-[calc(100vw-2rem)] max-w-2xl gap-0',
+          overlaySurfaces.dialogElevated,
+        )}
+      >
         <Command className="[&_[cmdk-group-heading]]:text-muted-foreground">{children}</Command>
       </DialogContent>
     </Dialog>

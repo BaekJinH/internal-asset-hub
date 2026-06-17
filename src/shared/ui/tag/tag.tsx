@@ -8,7 +8,7 @@ interface TagProps extends HTMLAttributes<HTMLSpanElement> {
 
 export function Tag({ className, as = 'span', href, children, ...props }: TagProps) {
   const classes = cn(
-    'inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-accent',
+    'inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium leading-none text-foreground transition-colors hover:bg-accent',
     className,
   )
 
