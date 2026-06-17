@@ -4,7 +4,7 @@ export const mockProjects = [
     name: 'JA Korea Renewal',
     description: 'JA Korea 웹사이트 리뉴얼 및 산출물 정리 프로젝트',
     status: 'active',
-    owner: '김민수',
+    owner: '이건희',
     assetCount: 286,
     updatedAt: '2026-06-10T09:00:00.000Z',
     links: {
@@ -19,7 +19,7 @@ export const mockProjects = [
     name: 'Internal AI Automation',
     description: '내부 문서 자동화와 분류 체계 개선 프로젝트',
     status: 'active',
-    owner: '이현우',
+    owner: '김성재',
     assetCount: 412,
     updatedAt: '2026-06-12T02:15:00.000Z',
     links: {
@@ -33,7 +33,7 @@ export const mockProjects = [
     name: 'Cursor Usage Report',
     description: '팀별 Cursor 도입 현황 리포트와 운영 문서 정리',
     status: 'paused',
-    owner: '박지연',
+    owner: '허승',
     assetCount: 93,
     updatedAt: '2026-05-21T07:40:00.000Z',
     links: {
@@ -46,7 +46,7 @@ export const mockProjects = [
     name: 'Image Convert Server',
     description: '이미지 변환 서버 고도화와 운영 표준화',
     status: 'completed',
-    owner: '김민수',
+    owner: '황범진',
     assetCount: 221,
     updatedAt: '2026-04-13T04:00:00.000Z',
     links: {
@@ -59,7 +59,7 @@ export const mockProjects = [
     name: 'Design System Archive',
     description: '디자인 시스템 컴포넌트와 산출물 아카이브',
     status: 'internal',
-    owner: '박지연',
+    owner: '장가영',
     assetCount: 272,
     updatedAt: '2026-06-14T03:20:00.000Z',
     links: {
