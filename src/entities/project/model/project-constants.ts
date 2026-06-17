@@ -5,4 +5,5 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   completed: '완료',
   paused: '보류',
   internal: '내부 프로젝트',
+  cancelled: '취소',
 }
