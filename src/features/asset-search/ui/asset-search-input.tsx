@@ -1,4 +1,4 @@
-import { SearchInput } from '@/shared/ui/search-input'
+import { SearchCommandInput } from '@/shared/ui/search-command-input'
 
 interface AssetSearchInputProps {
   value: string
@@ -6,5 +6,12 @@ interface AssetSearchInputProps {
 }
 
 export function AssetSearchInput({ value, onChange }: AssetSearchInputProps) {
-  return <SearchInput value={value} onChange={(event) => onChange(event.target.value)} placeholder="자산, 프로젝트, 태그 검색" />
+  return (
+    <SearchCommandInput
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      placeholder="자산, 프로젝트, 태그, 경로 검색…"
+      aria-label="자산 검색"
+    />
+  )
 }

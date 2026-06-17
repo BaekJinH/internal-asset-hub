@@ -24,14 +24,23 @@ export function useAssetSearch(assets: Asset[]) {
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState<AssetSearchFilters>(INITIAL_FILTERS)
   const [results, setResults] = useState<Asset[]>(assets)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     let isMounted = true
 
     const runSearch = async () => {
+      setIsLoading(true)
+
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve())
+      })
+
       const searchedAssets = await searchService.searchAssets(assets, query, filters)
+
       if (isMounted) {
         setResults(searchedAssets)
+        setIsLoading(false)
       }
     }
 
@@ -42,5 +51,5 @@ export function useAssetSearch(assets: Asset[]) {
     }
   }, [assets, filters, query])
 
-  return { query, setQuery, filters, setFilters, results }
+  return { query, setQuery, filters, setFilters, results, isLoading }
 }
