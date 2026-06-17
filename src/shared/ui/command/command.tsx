@@ -4,7 +4,7 @@ import type { ComponentPropsWithoutRef, ElementRef, HTMLAttributes } from 'react
 import { forwardRef } from 'react'
 import { cn } from '@/shared/lib/cn'
 import { overlaySurfaces } from '@/shared/lib/overlay-surfaces'
-import { Dialog, DialogContent } from '@/shared/ui/modal/modal'
+import { Dialog, DialogContent } from '@/shared/ui/dialog'
 
 export const Command = forwardRef<
   ElementRef<typeof CommandPrimitive>,

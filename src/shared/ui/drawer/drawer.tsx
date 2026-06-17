@@ -3,7 +3,7 @@ import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '@/shared/lib/cn'
 import { overlaySurfaces } from '@/shared/lib/overlay-surfaces'
-import { DialogOverlay, DialogPortal } from '@/shared/ui/modal/modal'
+import { DialogOverlay, DialogPortal } from '@/shared/ui/dialog'
 
 interface DrawerProps {
   open: boolean

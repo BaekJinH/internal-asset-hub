@@ -10,4 +10,4 @@ export {
   DialogTitle,
   DialogTrigger,
   Modal,
-} from '@/shared/ui/dialog'
+} from '@/shared/ui/dialog/dialog'
