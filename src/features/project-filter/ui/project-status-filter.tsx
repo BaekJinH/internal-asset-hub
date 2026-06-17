@@ -1,6 +1,6 @@
 import type { ProjectStatus } from '@/entities/project'
 import { PROJECT_STATUS_LABELS } from '@/entities/project'
-import { Select } from '@/shared/ui/select'
+import { SimpleSelect } from '@/shared/ui/select'
 
 interface ProjectStatusFilterProps {
   value: ProjectStatus | 'all'
@@ -9,13 +9,16 @@ interface ProjectStatusFilterProps {
 
 export function ProjectStatusFilter({ value, onChange }: ProjectStatusFilterProps) {
   return (
-    <Select value={value} onChange={(event) => onChange(event.target.value as ProjectStatus | 'all')}>
-      <option value="all">전체 상태</option>
-      {Object.entries(PROJECT_STATUS_LABELS).map(([status, label]) => (
-        <option key={status} value={status}>
-          {label}
-        </option>
-      ))}
-    </Select>
+    <SimpleSelect
+      value={value}
+      onChange={(nextValue) => onChange(nextValue as ProjectStatus | 'all')}
+      options={[
+        { value: 'all', label: '전체 상태' },
+        ...Object.entries(PROJECT_STATUS_LABELS).map(([status, label]) => ({
+          value: status,
+          label,
+        })),
+      ]}
+    />
   )
 }
