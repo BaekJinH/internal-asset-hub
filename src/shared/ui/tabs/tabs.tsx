@@ -1,5 +1,55 @@
-import type { ReactNode } from 'react'
+/* eslint-disable react-refresh/only-export-components */
+import * as TabsPrimitive from '@radix-ui/react-tabs'
+import type { ComponentPropsWithoutRef, ElementRef, ReactNode } from 'react'
+import { forwardRef } from 'react'
 import { cn } from '@/shared/lib/cn'
+
+export const TabsRoot = TabsPrimitive.Root
+
+export const TabsList = forwardRef<
+  ElementRef<typeof TabsPrimitive.List>,
+  ComponentPropsWithoutRef<typeof TabsPrimitive.List>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.List
+    ref={ref}
+    className={cn(
+      'inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground',
+      className,
+    )}
+    {...props}
+  />
+))
+TabsList.displayName = TabsPrimitive.List.displayName
+
+export const TabsTrigger = forwardRef<
+  ElementRef<typeof TabsPrimitive.Trigger>,
+  ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.Trigger
+    ref={ref}
+    className={cn(
+      'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm',
+      className,
+    )}
+    {...props}
+  />
+))
+TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
+
+export const TabsContent = forwardRef<
+  ElementRef<typeof TabsPrimitive.Content>,
+  ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.Content
+    ref={ref}
+    className={cn(
+      'mt-4 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+      className,
+    )}
+    {...props}
+  />
+))
+TabsContent.displayName = TabsPrimitive.Content.displayName
 
 interface TabsProps {
   items: { value: string; label: string }[]
@@ -9,21 +59,15 @@ interface TabsProps {
 
 export function Tabs({ items, value, onChange }: TabsProps) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((item) => (
-        <button
-          key={item.value}
-          type="button"
-          onClick={() => onChange(item.value)}
-          className={cn(
-            'rounded-md border px-3 py-2 text-sm font-medium',
-            value === item.value ? 'border-primary bg-primary text-white' : 'border-border bg-surface text-text-primary',
-          )}
-        >
-          {item.label}
-        </button>
-      ))}
-    </div>
+    <TabsRoot value={value} onValueChange={onChange}>
+      <TabsList>
+        {items.map((item) => (
+          <TabsTrigger key={item.value} value={item.value}>
+            {item.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </TabsRoot>
   )
 }
 

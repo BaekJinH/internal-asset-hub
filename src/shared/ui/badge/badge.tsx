@@ -1,23 +1,29 @@
+import { cva, type VariantProps } from 'class-variance-authority'
 import type { HTMLAttributes } from 'react'
 import { cn } from '@/shared/lib/cn'
 
-interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  tone?: 'default' | 'success' | 'warning' | 'danger' | 'info'
-}
+const badgeVariants = cva(
+  'inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors',
+  {
+    variants: {
+      tone: {
+        default: 'border-border/60 bg-muted text-foreground',
+        success: 'border-transparent bg-success-muted text-success-foreground',
+        warning: 'border-transparent bg-warning-muted text-warning-foreground',
+        danger: 'border-transparent bg-danger-muted text-danger-foreground',
+        info: 'border-transparent bg-info-muted text-info-foreground',
+      },
+    },
+    defaultVariants: {
+      tone: 'default',
+    },
+  },
+)
 
-const TONE_CLASS_MAP = {
-  default: 'bg-slate-100 text-text-primary',
-  success: 'bg-green-100 text-green-700',
-  warning: 'bg-amber-100 text-amber-700',
-  danger: 'bg-red-100 text-red-700',
-  info: 'bg-sky-100 text-sky-700',
-} as const
+export interface BadgeProps
+  extends HTMLAttributes<HTMLSpanElement>,
+    VariantProps<typeof badgeVariants> {}
 
 export function Badge({ className, tone = 'default', ...props }: BadgeProps) {
-  return (
-    <span
-      className={cn('inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold', TONE_CLASS_MAP[tone], className)}
-      {...props}
-    />
-  )
+  return <span className={cn(badgeVariants({ tone }), className)} {...props} />
 }

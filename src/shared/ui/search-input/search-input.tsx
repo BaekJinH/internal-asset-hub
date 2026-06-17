@@ -7,7 +7,7 @@ type SearchInputProps = InputHTMLAttributes<HTMLInputElement>
 export function SearchInput(props: SearchInputProps) {
   return (
     <div className="relative">
-      <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+      <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
       <Input className="pl-9" {...props} />
     </div>
   )

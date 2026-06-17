@@ -1,1 +1,8 @@
-export { Card } from '@/shared/ui/card/card'
+export {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/shared/ui/card/card'

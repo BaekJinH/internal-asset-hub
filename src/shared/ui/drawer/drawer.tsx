@@ -1,5 +1,8 @@
+import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '@/shared/lib/cn'
+import { DialogOverlay, DialogPortal } from '@/shared/ui/modal/modal'
 
 interface DrawerProps {
   open: boolean
@@ -9,16 +12,25 @@ interface DrawerProps {
 }
 
 export function Drawer({ open, title, onClose, children }: DrawerProps) {
-  if (!open) {
-    return null
-  }
-
   return (
-    <div className="fixed inset-0 z-40 bg-black/20" onClick={onClose}>
-      <aside className={cn('absolute right-0 top-0 h-full w-[360px] bg-surface p-4')} onClick={(event) => event.stopPropagation()}>
-        <h3 className="mb-4 text-lg font-semibold">{title}</h3>
-        {children}
-      </aside>
-    </div>
+    <DialogPrimitive.Root open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogPrimitive.Content
+          className={cn(
+            'fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-sm flex-col border-l bg-background p-6 shadow-lg',
+          )}
+        >
+          <div className="mb-4 flex items-center justify-between">
+            <DialogPrimitive.Title className="text-lg font-semibold">{title}</DialogPrimitive.Title>
+            <DialogPrimitive.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogPrimitive.Close>
+          </div>
+          {children}
+        </DialogPrimitive.Content>
+      </DialogPortal>
+    </DialogPrimitive.Root>
   )
 }

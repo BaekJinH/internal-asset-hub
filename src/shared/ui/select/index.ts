@@ -1,1 +1,9 @@
-export { Select } from '@/shared/ui/select/select'
+export {
+  Select,
+  SelectGroup,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SimpleSelect,
+} from '@/shared/ui/select/select'
