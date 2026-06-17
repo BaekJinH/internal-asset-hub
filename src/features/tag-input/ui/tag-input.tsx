@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import { useTagInput } from '@/features/tag-input/model/use-tag-input'
+import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
+import { Tag } from '@/shared/ui/tag'
 
 interface TagInputProps {
   initialTags?: string[]
@@ -22,15 +24,22 @@ export function TagInput({ initialTags, onChange }: TagInputProps) {
     <div className="space-y-2">
       <div className="flex gap-2">
         <Input value={value} onChange={(event) => setValue(event.target.value)} placeholder="태그 입력" />
-        <button type="button" onClick={handleAddTag} className="rounded-md border border-border px-3">
+        <Button type="button" variant="secondary" onClick={handleAddTag}>
           추가
-        </button>
+        </Button>
       </div>
       <div className="flex flex-wrap gap-1">
         {tags.map((tag) => (
-          <button key={tag} type="button" onClick={() => removeTag(tag)} className="inline-flex items-center gap-1 rounded bg-slate-100 px-2 py-1 text-xs">
-            #{tag}
-            <X size={12} />
+          <button
+            key={tag}
+            type="button"
+            onClick={() => removeTag(tag)}
+            className="inline-flex items-center gap-1"
+          >
+            <Tag>
+              #{tag}
+              <X size={12} />
+            </Tag>
           </button>
         ))}
       </div>
