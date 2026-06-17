@@ -12,7 +12,8 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation()
-  const isDashboard = location.pathname === ROUTE_PATHS.dashboard
+  const useWideContainer =
+    location.pathname === ROUTE_PATHS.dashboard || location.pathname === ROUTE_PATHS.search
 
   return (
     <SidebarProvider
@@ -25,7 +26,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <AppSidebar />
       <SidebarInset>
         <AppHeader />
-        <PageContainer variant={isDashboard ? 'dashboard' : 'default'}>{children}</PageContainer>
+        <PageContainer variant={useWideContainer ? 'dashboard' : 'default'}>{children}</PageContainer>
       </SidebarInset>
     </SidebarProvider>
   )

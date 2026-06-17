@@ -3,22 +3,31 @@ import { Link } from 'react-router-dom'
 import { PanelRightOpen, PlusCircle } from 'lucide-react'
 import { mockAssets } from '@/shared/mocks/mock-assets'
 import { mockProjects } from '@/shared/mocks/mock-projects'
-import { useAssetSearch, AssetSearchInput } from '@/features/asset-search'
-import { SearchFilterPanel } from '@/widgets/search-filter'
+import { useAssetSearch } from '@/features/asset-search'
 import { buildActiveFilterChips, clearAllFilters } from '@/widgets/search-filter/lib/build-active-filter-chips'
 import { SearchResults } from '@/widgets/search-results'
 import { AssetInspectorPanel, AssetInspectorSheet } from '@/widgets/asset-inspector'
 import { SearchCommandPalette } from '@/widgets/search-command-palette'
+import { SearchWorkspace } from '@/widgets/search-workspace'
 import { PageHeader } from '@/shared/ui/page-header'
-import { SectionHeader } from '@/shared/ui/section-header'
-import { ActiveFilterChips } from '@/shared/ui/active-filter-chips'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
-import { Card } from '@/shared/ui/card'
 import { APP_ROUTES } from '@/shared/config/routes'
 import { useMediaQuery } from '@/shared/lib/use-media-query'
 import type { Asset } from '@/entities/asset'
 import type { Project } from '@/entities/project'
+
+function hasActiveSearchState(query: string, filters: ReturnType<typeof useAssetSearch>['filters']) {
+  return (
+    query.trim().length > 0 ||
+    filters.project !== 'all' ||
+    filters.category !== 'all' ||
+    filters.status !== 'all' ||
+    Boolean(filters.owner.trim()) ||
+    Boolean(filters.tags.trim()) ||
+    Boolean(filters.date)
+  )
+}
 
 export function SearchPage() {
   const assets = mockAssets as Asset[]
@@ -45,6 +54,7 @@ export function SearchPage() {
     () => buildActiveFilterChips(filters, setFilters),
     [filters, setFilters],
   )
+  const hasActiveSearch = hasActiveSearchState(query, filters)
 
   const handleSelectAsset = useCallback(
     (assetId: string) => {
@@ -56,8 +66,14 @@ export function SearchPage() {
     [isDesktop],
   )
 
+  const resultsDescription = isLoading
+    ? '검색 중…'
+    : hasActiveSearch
+      ? `${results.length}개의 자산이 검색되었습니다.`
+      : `전체 ${results.length}개 자산 · 검색어나 필터로 좁혀 보세요`
+
   return (
-    <div className="flex flex-col gap-4 pb-24 md:gap-6 xl:pb-0">
+    <div className="flex flex-col gap-5 pb-24 xl:gap-6 xl:pb-0">
       <PageHeader
         title="통합 검색"
         description="자산, 프로젝트, 태그, 경로를 한곳에서 검색하고 바로 확인하세요."
@@ -74,44 +90,52 @@ export function SearchPage() {
         }
       />
 
-      <Card className="space-y-3 border-border/80 p-4 shadow-sm">
-        <AssetSearchInput value={query} onChange={setQuery} />
-        <SearchFilterPanel filters={filters} onChange={setFilters} />
-        <ActiveFilterChips
-          chips={activeFilterChips}
-          onClearAll={activeFilterChips.length > 0 ? () => clearAllFilters(setFilters) : undefined}
-        />
-      </Card>
+      <SearchWorkspace
+        query={query}
+        onQueryChange={setQuery}
+        filters={filters}
+        onFiltersChange={setFilters}
+        activeFilterChips={activeFilterChips}
+        onClearAllFilters={activeFilterChips.length > 0 ? () => clearAllFilters(setFilters) : undefined}
+      />
 
-      <div className="grid gap-4 md:gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="min-w-0">
-          <SectionHeader
-            title="검색 결과"
-            description={isLoading ? '검색 중…' : `${results.length}개의 자산이 검색되었습니다.`}
-            actions={
-              !isLoading && results.length > 0 ? (
-                <Badge tone="default" className="font-normal">
-                  {results.length}건
-                </Badge>
-              ) : null
-            }
-          />
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-12 xl:gap-6">
+        <section className="min-w-0 xl:col-span-8">
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-2 xl:mb-4">
+            <div>
+              <h2 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">검색 결과</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">{resultsDescription}</p>
+            </div>
+            {!isLoading && results.length > 0 ? (
+              <Badge tone="default" className="shrink-0 font-normal tabular-nums">
+                {results.length}건
+              </Badge>
+            ) : null}
+          </div>
           <SearchResults
             assets={results}
             selectedAssetId={selectedAsset?.id}
             onSelectAsset={handleSelectAsset}
             isLoading={isLoading}
+            hasActiveSearch={hasActiveSearch}
           />
         </section>
 
-        <aside className="hidden min-w-0 xl:block xl:sticky xl:top-[calc(var(--header-height)+1rem)] xl:self-start">
-          <SectionHeader title="인스펙터" description="선택한 자산의 상세 정보" />
-          <AssetInspectorPanel asset={selectedAsset} relatedAssets={relatedAssets} />
+        <aside className="hidden min-w-0 xl:col-span-4 xl:block">
+          <div className="sticky top-[calc(var(--header-height)+1.25rem)] flex flex-col gap-3">
+            <div>
+              <h2 className="text-base font-semibold tracking-tight text-foreground">인스펙터</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
+                {selectedAsset ? selectedAsset.name : '선택한 자산의 상세 정보'}
+              </p>
+            </div>
+            <AssetInspectorPanel asset={selectedAsset} relatedAssets={relatedAssets} />
+          </div>
         </aside>
       </div>
 
       {!isDesktop && selectedAsset ? (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/80 bg-background/95 p-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 xl:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background p-3 xl:hidden">
           <Button className="w-full" onClick={() => setInspectorOpen(true)}>
             <PanelRightOpen className="h-4 w-4" />
             <span className="truncate">{selectedAsset.name} 상세 보기</span>

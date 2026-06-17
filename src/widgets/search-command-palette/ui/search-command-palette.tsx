@@ -3,9 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { FolderKanban, Search } from 'lucide-react'
 import type { Asset } from '@/entities/asset'
 import { AssetCategoryIcon } from '@/entities/asset/ui/asset-category-icon'
+import { AssetStatusBadge } from '@/entities/asset'
 import type { Project } from '@/entities/project'
 import { APP_ROUTES } from '@/shared/config/routes'
 import { useKeyboardShortcut } from '@/shared/lib/use-keyboard-shortcut'
+import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
 import {
   CommandDialog,
   CommandEmpty,
@@ -14,6 +17,7 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
+  CommandShortcut,
 } from '@/shared/ui/command'
 import { Kbd } from '@/shared/ui/tooltip'
 
@@ -55,40 +59,64 @@ export function SearchCommandPalette({ assets, projects, onSelectAsset }: Search
 
   return (
     <>
-      <button
+      <Button
         type="button"
+        variant="outline"
+        size="sm"
+        className="hidden h-9 gap-2 text-muted-foreground sm:inline-flex"
         onClick={() => setOpen(true)}
-        className="hidden items-center gap-2 rounded-md border border-border/80 bg-card px-3 py-1.5 text-xs text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground sm:inline-flex"
       >
-        <Search className="h-3.5 w-3.5" />
-        빠른 검색
-        <Kbd>⌘K</Kbd>
-      </button>
+        <Search className="size-4" />
+        <span className="hidden md:inline">빠른 검색</span>
+        <span className="inline md:hidden">검색</span>
+        <Kbd className="hidden lg:inline-flex">⌘K</Kbd>
+      </Button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="자산, 프로젝트 검색…" />
+        <CommandInput placeholder="자산, 프로젝트, 태그로 검색…" />
         <CommandList>
           <CommandEmpty>검색 결과가 없습니다.</CommandEmpty>
           <CommandGroup heading="자산">
             {sortedAssets.map((asset) => (
-              <CommandItem key={asset.id} value={`${asset.name} ${asset.projectName} ${asset.tags.join(' ')}`} onSelect={() => handleAssetSelect(asset.id)}>
-                <AssetCategoryIcon category={asset.category} className="h-4 w-4 shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate">{asset.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">{asset.projectName}</p>
-                </div>
+              <CommandItem
+                key={asset.id}
+                value={`${asset.name} ${asset.projectName} ${asset.tags.join(' ')}`}
+                onSelect={() => handleAssetSelect(asset.id)}
+              >
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted">
+                  <AssetCategoryIcon category={asset.category} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-medium">{asset.name}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{asset.projectName}</span>
+                </span>
+                <span className="flex shrink-0 items-center gap-2">
+                  {asset.extension ? (
+                    <Badge tone="default" className="font-mono text-[10px] uppercase">
+                      {asset.extension}
+                    </Badge>
+                  ) : null}
+                  <AssetStatusBadge status={asset.status} />
+                </span>
               </CommandItem>
             ))}
           </CommandGroup>
           <CommandSeparator />
           <CommandGroup heading="프로젝트">
             {sortedProjects.map((project) => (
-              <CommandItem key={project.id} value={`${project.name} ${project.description}`} onSelect={() => handleProjectSelect(project.id)}>
-                <FolderKanban className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate">{project.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">{project.owner}</p>
-                </div>
+              <CommandItem
+                key={project.id}
+                value={`${project.name} ${project.description}`}
+                onSelect={() => handleProjectSelect(project.id)}
+              >
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted">
+                  <FolderKanban className="size-4 text-muted-foreground" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-medium">{project.name}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{project.owner}</span>
+                </span>
+                <CommandShortcut>프로젝트</CommandShortcut>
               </CommandItem>
             ))}
           </CommandGroup>
