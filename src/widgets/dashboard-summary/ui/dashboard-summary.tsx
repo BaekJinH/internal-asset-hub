@@ -1,15 +1,13 @@
-import { Card } from '@/shared/ui/card'
+import type { LucideIcon } from 'lucide-react'
+import { DashboardSummaryCard } from '@/widgets/dashboard-section'
 
 interface DashboardSummaryProps {
   title: string
   value: string
+  helperText?: string
+  icon: LucideIcon
 }
 
-export function DashboardSummary({ title, value }: DashboardSummaryProps) {
-  return (
-    <Card>
-      <p className="text-sm text-text-secondary">{title}</p>
-      <p className="mt-2 text-2xl font-bold">{value}</p>
-    </Card>
-  )
+export function DashboardSummary(props: DashboardSummaryProps) {
+  return <DashboardSummaryCard {...props} />
 }
