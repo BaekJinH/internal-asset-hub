@@ -1,5 +1,7 @@
 export { useAuth, usePermission } from '@/features/auth/model/use-auth'
+export { useCanViewFinancial, useFinancialVisibility } from '@/features/auth/model/use-financial-visibility'
 export { useAuthStore } from '@/features/auth/model/auth-store'
 export { hasPermission, isMaster } from '@/features/auth/lib/check-permission'
 export { LoginForm } from '@/features/auth/ui/login-form'
 export { ProtectedRoute } from '@/features/auth/ui/protected-route'
+export { FinancialGate } from '@/features/auth/ui/financial-gate'
