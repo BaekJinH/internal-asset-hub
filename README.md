@@ -81,6 +81,7 @@ src/
     ai-extension/
     settings/
   widgets/
+    app-layout/
     app-sidebar/
     app-header/
     dashboard-summary/
@@ -113,6 +114,17 @@ src/
     types/
     ui/
 ```
+
+## Design System
+
+shadcn/ui 스타일의 디자인 토큰과 공유 컴포넌트를 `shared/ui/`에서 관리합니다.
+
+- **토큰:** `src/app/styles/globals.css` (CSS 변수), `src/shared/constants/design-tokens.ts` (레이아웃 상수)
+- **유틸:** `cn()` (`clsx` + `tailwind-merge`), `cva` 기반 variant
+- **레이아웃:** `widgets/app-layout` (사이드바/헤더/메인 패딩)
+- **주요 컴포넌트:** Button, Card, Badge, Input, Textarea, Select, Tabs, Table, Dialog, EmptyState, Skeleton, FormField, Tag
+
+색상은 semantic token(`background`, `foreground`, `muted`, `primary`, `destructive` 등)을 사용하며, raw Tailwind palette 직접 사용은 지양합니다.
 
 ## Main Routes
 
