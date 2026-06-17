@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Page */
+    --background: 248 250 252;
+    --foreground: 15 23 42;
+
+    /* Solid surfaces — hex for guaranteed opaque rendering in portals */
+    --surface-popover: #ffffff;
+    --surface-popover-foreground: #0f172a;
+    --surface-dialog: #ffffff;
+    --surface-sheet: #ffffff;
+
+    --card: 255 255 255;
+    --card-foreground: 15 23 42;
+
+    --popover: 255 255 255;
+    --popover-foreground: 15 23 42;
+
+    --primary: 79 70 229;
+    --primary-foreground: 255 255 255;
+    --primary-hover: 67 56 202;
+    --primary-muted: 238 242 255;
+    --primary-muted-foreground: 67 56 202;
+
+    --secondary: 241 245 249;
+    --secondary-foreground: 30 41 59;
+
+    --muted: 241 245 249;
+    --muted-foreground: 100 116 139;
+
+    --accent: 238 242 255;
+    --accent-foreground: 67 56 202;
+
+    --destructive: 220 38 38;
+    --destructive-foreground: 255 255 255;
+
+    --border: 203 213 225;
+    --input: 203 213 225;
+    --ring: 99 102 241;
+    --radius: 0.5rem;
+
+    --sidebar: 255 255 255;
+    --sidebar-foreground: 15 23 42;
+    --sidebar-muted: 100 116 139;
+    --sidebar-accent: 241 245 249;
+    --sidebar-accent-foreground: 15 23 42;
+    --sidebar-primary: 79 70 229;
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-border: 226 232 240;
+    --sidebar-ring: 99 102 241;
+    --sidebar-width: 16rem;
+    --sidebar-width-icon: 3rem;
+    --header-height: 3.5rem;
+    --content-padding: 32px;
+
+    --success: 22 163 74;
+    --success-foreground: 21 128 61;
+    --success-muted: 236 253 245;
+    --warning: 217 119 6;
+    --warning-foreground: 180 83 9;
+    --warning-muted: 255 251 235;
+    --danger: 220 38 38;
+    --danger-foreground: 185 28 28;
+    --danger-muted: 254 242 242;
+    --info: 99 102 241;
+    --info-foreground: 67 56 202;
+    --info-muted: 238 242 255;
+
+    --chart-1: 79 70 229;
+    --chart-2: 99 102 241;
+    --chart-3: 14 165 233;
+    --chart-4: 34 197 94;
+    --chart-5: 234 179 8;
+
+    --z-overlay: 50;
+    --z-overlay-content: 51;
+    --z-popover: 100;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background-color: rgb(var(--background));
+    color: rgb(var(--foreground));
+    font-family:
+      Inter,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  /* Opaque floating surfaces — hex colors, not Tailwind opacity tokens */
+  .surface-popover {
+    background-color: var(--surface-popover) !important;
+    color: var(--surface-popover-foreground) !important;
+  }
+
+  .surface-dialog {
+    background-color: var(--surface-dialog) !important;
+    color: var(--surface-popover-foreground) !important;
+  }
+
+  .surface-sheet {
+    background-color: var(--surface-sheet) !important;
+    color: rgb(var(--foreground)) !important;
+  }
+
+  .surface-tooltip {
+    background-color: rgb(var(--foreground)) !important;
+    color: rgb(var(--background)) !important;
+  }
+}
+
+@layer components {
+  /* Radix popper wrapper — ensure dropdowns sit above page content */
+  [data-radix-popper-content-wrapper] {
+    z-index: var(--z-popover) !important;
+  }
+
+  /*
+   * Safety net: match ACTUAL Radix / cmdk attributes (not deprecated data-radix-*-content names).
+   * Select content uses role="listbox"; Dropdown uses role="menu"; Dialog uses role="dialog".
+   */
+  [role='dialog'],
+  [role='listbox'],
+  [role='menu'],
+  [cmdk-root],
+  [cmdk-list],
+  [cmdk-input-wrapper],
+  [data-radix-select-viewport],
+  [data-radix-popover-content] {
+    background-color: var(--surface-popover);
+    color: var(--surface-popover-foreground);
+  }
+
+  [data-radix-tooltip-content] {
+    background-color: rgb(var(--foreground));
+    color: rgb(var(--background));
+  }
+}
