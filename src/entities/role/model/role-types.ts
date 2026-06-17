@@ -9,6 +9,11 @@ export const PERMISSIONS = {
   SETTINGS_VIEW: 'settings.view',
   ACCESS_CONTROL_VIEW: 'access-control.view',
   ACCESS_CONTROL_MANAGE: 'access-control.manage',
+  SCHEDULE_VIEW: 'schedule.view',
+  SCHEDULE_MANAGE: 'schedule.manage',
+  OPERATIONS_VIEW: 'operations.view',
+  OPERATIONS_MANAGE: 'operations.manage',
+  FINANCIAL_VIEW: 'financial.view',
 } as const
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS]
@@ -38,4 +43,9 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   'settings.view': '설정',
   'access-control.view': '접근 제어 조회',
   'access-control.manage': '접근 제어 관리',
+  'schedule.view': '주간 업무 조회',
+  'schedule.manage': '주간 업무 관리',
+  'operations.view': '운영 조회',
+  'operations.manage': '운영 관리',
+  'financial.view': '재무 정보 조회',
 }

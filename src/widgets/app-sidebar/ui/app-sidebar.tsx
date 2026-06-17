@@ -78,6 +78,9 @@ function SidebarNavigation({ onNavigate }: { onNavigate?: () => void }) {
   const filteredGroups = NAVIGATION_GROUPS.map((group) => ({
     ...group,
     items: group.items.filter((item) => {
+      if (item.permission) {
+        return checkPermission(item.permission)
+      }
       if (item.path === APP_ROUTES.settings) {
         return checkPermission(PERMISSIONS.SETTINGS_VIEW)
       }

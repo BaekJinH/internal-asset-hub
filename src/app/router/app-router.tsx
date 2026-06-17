@@ -11,6 +11,12 @@ import { SearchPage } from '@/pages/search'
 import { AiExtensionPage } from '@/pages/ai-extension'
 import { SettingsPage } from '@/pages/settings'
 import { AccessControlPage } from '@/pages/settings/access-control'
+import { OperationsSettingsPage } from '@/pages/settings/operations'
+import { SchedulePage } from '@/pages/schedule'
+import { WorkloadPage } from '@/pages/operations/workload'
+import { ApprovalsPage } from '@/pages/operations/approvals'
+import { ProfitPage } from '@/pages/operations/profit'
+import { ReportPage } from '@/pages/operations/report'
 import { LoginPage } from '@/pages/login'
 import { ROUTE_PATHS } from '@/app/router/route-paths'
 
@@ -27,6 +33,46 @@ function ProtectedAppLayout() {
           <Route path={ROUTE_PATHS.search} element={<SearchPage />} />
           <Route path={ROUTE_PATHS.aiExtension} element={<AiExtensionPage />} />
           <Route
+            path={ROUTE_PATHS.schedule}
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.SCHEDULE_VIEW}>
+                <SchedulePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTE_PATHS.operationsWorkload}
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.OPERATIONS_VIEW}>
+                <WorkloadPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTE_PATHS.operationsApprovals}
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.OPERATIONS_VIEW}>
+                <ApprovalsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTE_PATHS.operationsProfit}
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.FINANCIAL_VIEW}>
+                <ProfitPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTE_PATHS.operationsReport}
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.FINANCIAL_VIEW}>
+                <ReportPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path={ROUTE_PATHS.settings}
             element={
               <ProtectedRoute requiredPermission={PERMISSIONS.SETTINGS_VIEW}>
@@ -39,6 +85,14 @@ function ProtectedAppLayout() {
             element={
               <ProtectedRoute requiredPermission={PERMISSIONS.ACCESS_CONTROL_VIEW}>
                 <AccessControlPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTE_PATHS.settingsOperations}
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.FINANCIAL_VIEW}>
+                <OperationsSettingsPage />
               </ProtectedRoute>
             }
           />

@@ -9,4 +9,11 @@ export const APP_ROUTES = {
   aiExtension: '/ai-extension',
   settings: '/settings',
   settingsAccessControl: '/settings/access-control',
+  settingsOperations: '/settings/operations',
+  schedule: '/schedule',
+  scheduleEdit: '/schedule/:weekId/:type',
+  operationsWorkload: '/operations/workload',
+  operationsApprovals: '/operations/approvals',
+  operationsProfit: '/operations/profit',
+  operationsReport: '/operations/report',
 } as const

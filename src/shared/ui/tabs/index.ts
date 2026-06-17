@@ -1,1 +1,8 @@
-export { Tabs, TabsPanel } from '@/shared/ui/tabs/tabs'
+export {
+  Tabs,
+  TabsPanel,
+  TabsRoot,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from '@/shared/ui/tabs/tabs'
