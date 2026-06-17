@@ -12,6 +12,10 @@ const ROUTE_META: Record<string, RouteMeta> = {
   [APP_ROUTES.search]: { label: '통합 검색', breadcrumb: '통합 검색' },
   [APP_ROUTES.aiExtension]: { label: 'AI 확장', breadcrumb: 'AI 확장' },
   [APP_ROUTES.settings]: { label: '설정', breadcrumb: '설정' },
+  [APP_ROUTES.settingsAccessControl]: {
+    label: '접근 제어',
+    breadcrumb: '설정 / 접근 제어',
+  },
 }
 
 export function getRouteMeta(pathname: string): RouteMeta {

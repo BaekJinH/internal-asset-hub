@@ -1,4 +1,5 @@
 export const APP_ROUTES = {
+  login: '/login',
   dashboard: '/',
   projects: '/projects',
   projectDetail: '/projects/:projectId',
@@ -7,4 +8,5 @@ export const APP_ROUTES = {
   search: '/search',
   aiExtension: '/ai-extension',
   settings: '/settings',
+  settingsAccessControl: '/settings/access-control',
 } as const
