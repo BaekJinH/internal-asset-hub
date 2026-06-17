@@ -1,16 +1,32 @@
+import { useState } from 'react'
+import { cn } from '@/shared/lib/cn'
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar'
+
 interface UserAvatarProps {
   name: string
   avatarUrl?: string
+  className?: string
 }
 
-export function UserAvatar({ name, avatarUrl }: UserAvatarProps) {
-  if (avatarUrl) {
-    return <img src={avatarUrl} alt={name} className="h-8 w-8 rounded-full" />
-  }
+function getInitials(name: string) {
+  return name.trim().slice(0, 1)
+}
+
+export function UserAvatar({ name, avatarUrl, className }: UserAvatarProps) {
+  const [hasImageError, setHasImageError] = useState(false)
+  const showImage = Boolean(avatarUrl) && !hasImageError
 
   return (
-    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-      {name.slice(0, 1)}
-    </span>
+    <Avatar className={cn('size-9', className)}>
+      {showImage ? (
+        <AvatarImage
+          src={avatarUrl}
+          alt={name}
+          onError={() => setHasImageError(true)}
+        />
+      ) : (
+        <AvatarFallback>{getInitials(name)}</AvatarFallback>
+      )}
+    </Avatar>
   )
 }

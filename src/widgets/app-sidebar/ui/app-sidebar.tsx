@@ -1,8 +1,12 @@
 import type { ComponentProps } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { ChevronsLeft } from 'lucide-react'
+import { usePermission } from '@/features/auth/model/use-auth'
+import { PERMISSIONS } from '@/entities/role/model/role-types'
 import { NAVIGATION_GROUPS } from '@/shared/config/navigation'
+import { APP_ROUTES } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
+import { BrandLogo } from '@/shared/ui/brand-logo'
 import {
   Sidebar,
   SidebarContent,
@@ -20,23 +24,13 @@ import {
 
 function SidebarBrand() {
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          size="lg"
-          tooltip="Asset Hub"
-          className="cursor-default hover:bg-transparent active:bg-transparent data-[active=true]:bg-transparent"
-        >
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <span className="text-xs font-bold">AH</span>
-          </div>
-          <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">Asset Hub</span>
-            <span className="truncate text-xs text-sidebar-muted">내부 자산 관리</span>
-          </div>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    </SidebarMenu>
+    <div className="flex items-center justify-center px-2 py-3">
+      <BrandLogo
+        variant="on-light"
+        size="md"
+        className="h-7 max-w-[9.5rem] object-center group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:max-w-10"
+      />
+    </div>
   )
 }
 
@@ -47,6 +41,10 @@ function isNavItemActive(pathname: string, path: string) {
 
   if (path === '/projects') {
     return pathname === '/projects' || pathname.startsWith('/projects/')
+  }
+
+  if (path === APP_ROUTES.settings) {
+    return pathname === APP_ROUTES.settings || pathname.startsWith(`${APP_ROUTES.settings}/`)
   }
 
   return pathname === path
@@ -75,9 +73,21 @@ function SidebarNavItem({
 }
 
 function SidebarNavigation({ onNavigate }: { onNavigate?: () => void }) {
+  const { checkPermission } = usePermission()
+
+  const filteredGroups = NAVIGATION_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => {
+      if (item.path === APP_ROUTES.settings) {
+        return checkPermission(PERMISSIONS.SETTINGS_VIEW)
+      }
+      return true
+    }),
+  })).filter((group) => group.items.length > 0)
+
   return (
     <>
-      {NAVIGATION_GROUPS.map((group) => (
+      {filteredGroups.map((group) => (
         <SidebarGroup key={group.label}>
           <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
           <SidebarGroupContent>
