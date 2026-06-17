@@ -19,14 +19,9 @@ export function UserAvatar({ name, avatarUrl, className }: UserAvatarProps) {
   return (
     <Avatar className={cn('size-9', className)}>
       {showImage ? (
-        <AvatarImage
-          src={avatarUrl}
-          alt={name}
-          onError={() => setHasImageError(true)}
-        />
-      ) : (
-        <AvatarFallback>{getInitials(name)}</AvatarFallback>
-      )}
+        <AvatarImage src={avatarUrl} alt={name} onError={() => setHasImageError(true)} />
+      ) : null}
+      <AvatarFallback delayMs={showImage ? 600 : 0}>{getInitials(name)}</AvatarFallback>
     </Avatar>
   )
 }
