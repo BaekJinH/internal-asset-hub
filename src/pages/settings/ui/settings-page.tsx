@@ -7,6 +7,7 @@ import {
   FileText,
   Tags,
   ChevronRight,
+  ClipboardList,
 } from 'lucide-react'
 import { usePermission } from '@/features/auth/model/use-auth'
 import { PERMISSIONS } from '@/entities/role/model/role-types'
@@ -18,6 +19,13 @@ import { Badge } from '@/shared/ui/badge'
 const SETTINGS_SECTIONS = [
   { title: '카테고리 관리', description: '자산 카테고리 및 분류 규칙', icon: FolderTree },
   { title: '태그 관리', description: '공통 태그 및 태그 정책', icon: Tags },
+  {
+    title: '운영 설정',
+    description: '팀원 프로필, 원가, 데이터 백업',
+    icon: ClipboardList,
+    path: APP_ROUTES.settingsOperations,
+    permission: PERMISSIONS.FINANCIAL_VIEW,
+  },
   {
     title: '접근 제어',
     description: '역할 기반 권한 설정',
