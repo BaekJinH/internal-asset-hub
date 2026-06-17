@@ -10,7 +10,10 @@ const MEMBER_PERMISSIONS = ALL_PERMISSIONS.filter(
   (permission) =>
     permission !== PERMISSIONS.SETTINGS_VIEW &&
     permission !== PERMISSIONS.ACCESS_CONTROL_VIEW &&
-    permission !== PERMISSIONS.ACCESS_CONTROL_MANAGE,
+    permission !== PERMISSIONS.ACCESS_CONTROL_MANAGE &&
+    permission !== PERMISSIONS.OPERATIONS_VIEW &&
+    permission !== PERMISSIONS.OPERATIONS_MANAGE &&
+    permission !== PERMISSIONS.FINANCIAL_VIEW,
 )
 
 export const mockRoles: Role[] = [

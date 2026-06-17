@@ -81,7 +81,7 @@ export const mockUsers: User[] = [
     email: '2kunhee94@tinto.co.kr',
     jobTitle: '팀장',
     teamId: TEAM_IDS.DEV,
-    roleId: ROLE_IDS.MEMBER,
+    roleId: ROLE_IDS.MASTER,
     department: '개발팀',
   },
   {
@@ -146,4 +146,11 @@ export function getUserById(userId: string): User | undefined {
 
 export function getUserByEmail(email: string): User | undefined {
   return mockUsers.find((user) => user.email.toLowerCase() === email.toLowerCase())
+}
+
+const EXCLUDED_OPERATIONS_TEAM_JOB_TITLES = new Set(['대표', '이사'])
+
+/** 운영 설정 팀원 목록: 대표·이사 제외 전체 */
+export function getOperationsTeamMembers(): User[] {
+  return mockUsers.filter((user) => !EXCLUDED_OPERATIONS_TEAM_JOB_TITLES.has(user.jobTitle))
 }

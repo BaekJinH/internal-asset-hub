@@ -13,6 +13,32 @@ export const mockProjects = [
       notion: 'https://notion.so/ja-korea-renewal',
       deployUrl: 'https://renewal.jakorea.internal',
     },
+    operations: {
+      clientName: 'JA Korea',
+      startDate: '2026-01-06',
+      endDate: '2026-08-31',
+      contractAmount: 120_000_000,
+      contractMDs: { planning: 10, design: 25, publishing: 15, dev: 30 },
+      contractRates: { planning: 800_000, design: 750_000, publishing: 700_000, dev: 900_000 },
+      assignments: [
+        {
+          id: 'a_ja_u004',
+          employeeId: 'u-004',
+          jobType: 'design',
+          startDate: '2026-01-06',
+          endDate: '2026-08-31',
+          allocation: 0.5,
+        },
+        {
+          id: 'a_ja_u006',
+          employeeId: 'u-006',
+          jobType: 'planning',
+          startDate: '2026-01-06',
+          endDate: '2026-03-31',
+          allocation: 0.25,
+        },
+      ],
+    },
   },
   {
     id: 'project-internal-ai-automation',
@@ -27,6 +53,32 @@ export const mockProjects = [
       github: 'https://github.com/tintolab-development/internal-ai-automation',
       notion: 'https://notion.so/internal-ai-automation',
     },
+    operations: {
+      clientName: 'TintoLab',
+      startDate: '2026-03-01',
+      endDate: '2026-09-30',
+      contractAmount: 80_000_000,
+      contractMDs: { planning: 5, design: 8, publishing: 0, dev: 40 },
+      contractRates: { planning: 800_000, design: 750_000, publishing: 700_000, dev: 900_000 },
+      assignments: [
+        {
+          id: 'a_ai_u009',
+          employeeId: 'u-009',
+          jobType: 'dev',
+          startDate: '2026-03-01',
+          endDate: '2026-09-30',
+          allocation: 1,
+        },
+        {
+          id: 'a_ai_u012',
+          employeeId: 'u-012',
+          jobType: 'dev',
+          startDate: '2026-04-01',
+          endDate: '2026-09-30',
+          allocation: 0.5,
+        },
+      ],
+    },
   },
   {
     id: 'project-cursor-usage-report',
@@ -40,6 +92,16 @@ export const mockProjects = [
       github: 'https://github.com/tintolab-development/cursor-usage-report',
       notion: 'https://notion.so/cursor-usage-report',
     },
+    operations: {
+      clientName: 'TintoLab',
+      startDate: '2026-02-01',
+      endDate: '2026-06-30',
+      contractAmount: 15_000_000,
+      contractMDs: { planning: 3, design: 2, publishing: 0, dev: 5 },
+      contractRates: { planning: 800_000, design: 750_000, publishing: 700_000, dev: 900_000 },
+      assignments: [],
+      legacy: true,
+    },
   },
   {
     id: 'project-image-convert-server',
@@ -52,6 +114,15 @@ export const mockProjects = [
     links: {
       github: 'https://github.com/tintolab-development/image-convert-server',
       deployUrl: 'https://img-convert.internal',
+    },
+    operations: {
+      clientName: 'TintoLab',
+      startDate: '2025-10-01',
+      endDate: '2026-03-31',
+      contractAmount: 45_000_000,
+      contractMDs: { planning: 2, design: 0, publishing: 0, dev: 20 },
+      contractRates: { planning: 800_000, design: 750_000, publishing: 700_000, dev: 900_000 },
+      assignments: [],
     },
   },
   {
