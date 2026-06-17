@@ -1,4 +1,4 @@
-import { SearchX } from 'lucide-react'
+import { MousePointerClick } from 'lucide-react'
 import type { Asset } from '@/entities/asset'
 import { AssetInspectorContent } from '@/widgets/asset-inspector/ui/asset-inspector-content'
 import { Card } from '@/shared/ui/card'
@@ -14,11 +14,11 @@ interface AssetInspectorPanelProps {
 export function AssetInspectorPanel({ asset, relatedAssets = [], className }: AssetInspectorPanelProps) {
   if (!asset) {
     return (
-      <Card className={cn('flex flex-col items-center justify-center p-8 shadow-sm', className)}>
+      <Card className={cn('flex min-h-[280px] flex-col items-center justify-center p-6 shadow-sm', className)}>
         <EmptyState
-          icon={SearchX}
+          icon={MousePointerClick}
           title="자산을 선택하세요"
-          description="검색 결과에서 자산을 선택하면 상세 정보와 빠른 작업을 확인할 수 있습니다."
+          description="검색 결과에서 자산을 선택하면 상세 정보, 태그, 관련 자산을 이곳에서 확인할 수 있습니다."
           className="border-none bg-transparent p-0 shadow-none"
         />
       </Card>
@@ -30,7 +30,7 @@ export function AssetInspectorPanel({ asset, relatedAssets = [], className }: As
       <AssetInspectorContent
         asset={asset}
         relatedAssets={relatedAssets}
-        scrollClassName="max-h-[calc(100vh-16rem)]"
+        scrollClassName="max-h-[calc(100vh-var(--header-height)-12rem)]"
       />
     </Card>
   )

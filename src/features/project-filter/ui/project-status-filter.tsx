@@ -1,6 +1,6 @@
 import type { ProjectStatus } from '@/entities/project'
 import { PROJECT_STATUS_LABELS } from '@/entities/project'
-import { SimpleSelect } from '@/shared/ui/select'
+import { FilterSelect } from '@/shared/ui/filter-select'
 
 interface ProjectStatusFilterProps {
   value: ProjectStatus | 'all'
@@ -9,7 +9,9 @@ interface ProjectStatusFilterProps {
 
 export function ProjectStatusFilter({ value, onChange }: ProjectStatusFilterProps) {
   return (
-    <SimpleSelect
+    <FilterSelect
+      id="project-status-filter"
+      label="프로젝트 상태"
       value={value}
       onChange={(nextValue) => onChange(nextValue as ProjectStatus | 'all')}
       options={[
@@ -19,6 +21,7 @@ export function ProjectStatusFilter({ value, onChange }: ProjectStatusFilterProp
           label,
         })),
       ]}
+      triggerClassName="w-full"
     />
   )
 }

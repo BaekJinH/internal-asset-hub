@@ -20,12 +20,14 @@ export function DashboardProjectList({ projects, className }: DashboardProjectLi
         const linkEntries = Object.entries(project.links).filter(([, value]) => Boolean(value))
 
         return (
-          <Link
+          <div
             key={project.id}
-            to={APP_ROUTES.projectDetail.replace(':projectId', project.id)}
-            className="group grid grid-cols-1 gap-3 px-6 py-4 no-underline transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(0,1fr)_7.5rem_11rem] sm:items-center sm:gap-x-6"
+            className="group grid grid-cols-1 gap-3 px-6 py-4 transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(0,1fr)_7.5rem_11rem] sm:items-center sm:gap-x-6"
           >
-            <div className="min-w-0">
+            <Link
+              to={APP_ROUTES.projectDetail.replace(':projectId', project.id)}
+              className="min-w-0 no-underline"
+            >
               <TruncatedText text={project.name} className="text-sm font-semibold text-foreground" />
               <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{project.description}</p>
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -35,7 +37,7 @@ export function DashboardProjectList({ projects, className }: DashboardProjectLi
                 </NoWrapText>
                 <NoWrapText muted>{formatDate(project.updatedAt)}</NoWrapText>
               </div>
-            </div>
+            </Link>
 
             <div className="flex items-center justify-between gap-3 sm:contents">
               <div className="flex shrink-0 items-center sm:justify-start">
@@ -44,14 +46,20 @@ export function DashboardProjectList({ projects, className }: DashboardProjectLi
 
               <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
                 {linkEntries.slice(0, 3).map(([key, value]) => (
-                  <Tag key={key} as="a" href={value} onClick={(event) => event.stopPropagation()}>
+                  <Tag key={key} as="a" href={value}>
                     {key}
                   </Tag>
                 ))}
-                <ArrowUpRight className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                <Link
+                  to={APP_ROUTES.projectDetail.replace(':projectId', project.id)}
+                  className="inline-flex shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                  aria-label={`${project.name} 상세 보기`}
+                >
+                  <ArrowUpRight className="size-4" />
+                </Link>
               </div>
             </div>
-          </Link>
+          </div>
         )
       })}
     </div>

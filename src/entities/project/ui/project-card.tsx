@@ -16,38 +16,41 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
   const linkEntries = Object.entries(project.links).filter(([, value]) => Boolean(value))
 
   return (
-    <Link
-      to={APP_ROUTES.projectDetail.replace(':projectId', project.id)}
-      className={cn('group block text-foreground no-underline', className)}
+    <Card
+      interactive
+      className={cn(
+        'relative flex h-full flex-col gap-3 p-4 transition-[border-color,box-shadow,background-color] hover:bg-accent/20',
+        className,
+      )}
     >
-      <Card
-        interactive
-        className="flex h-full flex-col gap-3 p-4 transition-[border-color,box-shadow,background-color] group-hover:bg-accent/20"
-      >
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <h3 className="truncate text-sm font-semibold text-foreground">{project.name}</h3>
-            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{project.description}</p>
-          </div>
-          <ProjectStatusBadge status={project.status} />
+      <Link
+        to={APP_ROUTES.projectDetail.replace(':projectId', project.id)}
+        className="absolute inset-0 z-0 rounded-lg"
+        aria-label={`${project.name} 상세 보기`}
+      />
+      <div className="relative z-10 flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-sm font-semibold text-foreground">{project.name}</h3>
+          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{project.description}</p>
         </div>
+        <ProjectStatusBadge status={project.status} />
+      </div>
 
-        <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span>{project.owner}</span>
-          <span className="text-right tabular-nums">자산 {project.assetCount}개</span>
-          <span className="col-span-2">{formatDate(project.updatedAt)}</span>
+      <div className="relative z-10 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        <span>{project.owner}</span>
+        <span className="text-right tabular-nums">자산 {project.assetCount}개</span>
+        <span className="col-span-2">{formatDate(project.updatedAt)}</span>
+      </div>
+
+      {linkEntries.length > 0 ? (
+        <div className="relative z-10 flex flex-wrap gap-1.5 pt-1">
+          {linkEntries.map(([key, value]) => (
+            <Tag key={key} as="a" href={value} className="relative z-10">
+              {key}
+            </Tag>
+          ))}
         </div>
-
-        {linkEntries.length > 0 ? (
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            {linkEntries.map(([key, value]) => (
-              <Tag key={key} as="a" href={value} onClick={(event) => event.stopPropagation()}>
-                {key}
-              </Tag>
-            ))}
-          </div>
-        ) : null}
-      </Card>
-    </Link>
+      ) : null}
+    </Card>
   )
 }
