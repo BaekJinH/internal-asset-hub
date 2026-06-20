@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import {
   dashboardCardChartContentClassName,
   dashboardCardHeaderClassName,
+  dashboardCardHeaderTitleClassName,
 } from '@/widgets/dashboard/ui/dashboard-card-styles'
 import { cn } from '@/shared/lib/cn'
 
@@ -26,7 +27,7 @@ export function DashboardChartCard({
   return (
     <Card className={cn('overflow-hidden p-0 shadow-sm', className)}>
       <CardHeader className={dashboardCardHeaderClassName}>
-        <div className="min-w-0 space-y-1">
+        <div className={dashboardCardHeaderTitleClassName}>
           <CardTitle className="text-base font-semibold">{title}</CardTitle>
           {description ? <CardDescription>{description}</CardDescription> : null}
         </div>

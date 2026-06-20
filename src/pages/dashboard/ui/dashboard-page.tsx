@@ -41,7 +41,7 @@ import {
 
 function DashboardSummarySkeleton() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
       {Array.from({ length: 5 }).map((_, index) => (
         <Skeleton key={index} className="h-[104px] rounded-lg" />
       ))}
@@ -96,7 +96,7 @@ export function DashboardPage() {
   )
 
   return (
-    <>
+    <div className="flex flex-col gap-8">
       <PageHeader
         title="대시보드"
         description="내부 자산 허브의 프로젝트, 자산, 스토리지 현황을 한눈에 확인하세요."
@@ -120,7 +120,7 @@ export function DashboardPage() {
       {isLoading ? (
         <DashboardSummarySkeleton />
       ) : (
-        <section aria-label="요약 지표" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <section aria-label="요약 지표" className="grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
           <DashboardSummaryCard
             title="전체 프로젝트"
             value={String(projects.length)}
@@ -199,7 +199,7 @@ export function DashboardPage() {
         padded={false}
       >
         {isLoading ? (
-          <div className="space-y-2 p-6">
+          <div className="space-y-3 p-6">
             {Array.from({ length: 5 }).map((_, index) => (
               <Skeleton key={index} className="h-10 rounded-md" />
             ))}
@@ -222,7 +222,7 @@ export function DashboardPage() {
         padded={false}
       >
         {isLoading ? (
-          <div className="space-y-2 p-6">
+          <div className="space-y-3 p-6">
             {Array.from({ length: 4 }).map((_, index) => (
               <Skeleton key={index} className="h-24 rounded-lg" />
             ))}
@@ -231,6 +231,6 @@ export function DashboardPage() {
           <DashboardProjectList projects={recentProjects} />
         )}
       </DashboardSection>
-    </>
+    </div>
   )
 }

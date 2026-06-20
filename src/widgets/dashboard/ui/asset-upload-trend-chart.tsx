@@ -19,7 +19,7 @@ interface AssetUploadTrendChartProps {
   data: UploadTrendPoint[]
 }
 
-const CHART_TICK_STYLE = { fill: 'hsl(215 16% 47%)', fontSize: 12 }
+const CHART_TICK = { fontSize: 12 }
 
 export function AssetUploadTrendChart({ data }: AssetUploadTrendChartProps) {
   return (
@@ -28,7 +28,7 @@ export function AssetUploadTrendChart({ data }: AssetUploadTrendChartProps) {
       description="월별 신규 등록 자산 수"
     >
       <ChartContainer config={chartConfig} className="aspect-auto h-[300px] w-full">
-        <AreaChart data={data} margin={{ top: 12, right: 16, left: 8, bottom: 4 }}>
+        <AreaChart data={data} margin={{ top: 16, right: 24, left: 12, bottom: 8 }}>
           <defs>
             <linearGradient id="uploadFill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="rgb(var(--chart-1))" stopOpacity={0.35} />
@@ -41,14 +41,14 @@ export function AssetUploadTrendChart({ data }: AssetUploadTrendChartProps) {
             tickLine={false}
             axisLine={false}
             tickMargin={10}
-            tick={CHART_TICK_STYLE}
+            tick={CHART_TICK}
           />
           <YAxis
             allowDecimals={false}
             tickLine={false}
             axisLine={false}
             width={40}
-            tick={CHART_TICK_STYLE}
+            tick={CHART_TICK}
           />
           <ChartTooltip content={<ChartTooltipContent />} />
           <Area

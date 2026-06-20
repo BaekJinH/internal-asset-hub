@@ -39,14 +39,14 @@ export function AssetCategoryChart({ data }: AssetCategoryChartProps) {
       description="샘플 자산 기준 카테고리 비중"
     >
       <ChartContainer config={chartConfig} className="aspect-auto h-[320px] w-full">
-        <PieChart margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
+        <PieChart margin={{ top: 12, right: 16, left: 16, bottom: 8 }}>
           <ChartTooltip content={<ChartTooltipContent hideLabel nameKey="key" />} />
           <Pie
             data={data}
             dataKey="count"
             nameKey="key"
-            innerRadius={52}
-            outerRadius={84}
+            innerRadius={48}
+            outerRadius={76}
             paddingAngle={2}
             cx="50%"
             cy="42%"
