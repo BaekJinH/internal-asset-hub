@@ -42,7 +42,7 @@ export function AssetCard({
           className,
         )}
       >
-        <div className="flex gap-3 p-4">
+        <div className="flex gap-4 p-5">
           <div
             className={cn(
               'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-accent text-accent-foreground transition-colors',

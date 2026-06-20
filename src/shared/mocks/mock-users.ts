@@ -42,7 +42,7 @@ export const mockUsers: User[] = [
   {
     id: 'u-005',
     name: '허승',
-    email: 'umcin8438@tinto.co.kr',
+    email: 'umain9436@tinto.co.kr',
     jobTitle: 'Lead Designer',
     teamId: TEAM_IDS.UX,
     roleId: ROLE_IDS.MASTER,

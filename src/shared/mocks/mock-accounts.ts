@@ -7,7 +7,7 @@ export const mockAccounts: Account[] = [
   { id: 'acc-002', userId: 'u-002', email: 'jinnychoi@tinto.co.kr', password: MOCK_DEFAULT_PASSWORD },
   { id: 'acc-003', userId: 'u-003', email: 'yja201109@tinto.co.kr', password: MOCK_DEFAULT_PASSWORD },
   { id: 'acc-004', userId: 'u-004', email: 'yeong_2@tinto.co.kr', password: MOCK_DEFAULT_PASSWORD },
-  { id: 'acc-005', userId: 'u-005', email: 'umcin8438@tinto.co.kr', password: MOCK_DEFAULT_PASSWORD },
+  { id: 'acc-005', userId: 'u-005', email: 'umain9436@tinto.co.kr', password: MOCK_DEFAULT_PASSWORD },
   { id: 'acc-006', userId: 'u-006', email: 'nuc@tinto.co.kr', password: MOCK_DEFAULT_PASSWORD },
   { id: 'acc-007', userId: 'u-007', email: 'parksaeim92@tinto.co.kr', password: MOCK_DEFAULT_PASSWORD },
   { id: 'acc-008', userId: 'u-008', email: '0915lgw@tinto.co.kr', password: MOCK_DEFAULT_PASSWORD },

@@ -23,7 +23,7 @@ export function ProjectCard({ project, className }: ProjectCardProps) {
     <Card
       interactive
       className={cn(
-        'relative flex h-full flex-col gap-3 p-4 transition-[border-color,box-shadow,background-color] hover:bg-accent/20',
+        'relative flex h-full flex-col gap-4 p-5 transition-[border-color,box-shadow,background-color] hover:bg-accent/20',
         className,
       )}
     >

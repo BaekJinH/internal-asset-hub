@@ -21,6 +21,20 @@ export interface EmployeePL {
   weeksWithData: number
 }
 
+export interface TeamPL {
+  teamId: string
+  teamLabel: string
+  memberCount: number
+  hours: number
+  actualMD: number
+  cost: number
+  revenue: number
+  assignedMD: number
+  contribution: number
+  margin: number
+  utilization: number
+}
+
 export function computeEmployeeWeeklyTrend(
   schedules: Schedule[],
   userId: string,
@@ -95,5 +109,38 @@ export function computeEmployeePL(
     efficiency,
     utilization,
     weeksWithData,
+  }
+}
+
+export function computeTeamPL(
+  teamId: string,
+  teamLabel: string,
+  memberPLs: EmployeePL[],
+  config: WorkConfig,
+): TeamPL {
+  const hours = memberPLs.reduce((sum, pl) => sum + pl.hours, 0)
+  const cost = memberPLs.reduce((sum, pl) => sum + pl.cost, 0)
+  const revenue = memberPLs.reduce((sum, pl) => sum + pl.revenue, 0)
+  const assignedMD = memberPLs.reduce((sum, pl) => sum + pl.assignedMD, 0)
+  const contribution = revenue - cost
+  const margin = revenue > 0 ? (contribution / revenue) * 100 : 0
+  const availableHours = memberPLs.reduce(
+    (sum, pl) => sum + (pl.weeksWithData || 1) * config.weeklyHours,
+    0,
+  )
+  const utilization = availableHours > 0 ? (hours / availableHours) * 100 : 0
+
+  return {
+    teamId,
+    teamLabel,
+    memberCount: memberPLs.length,
+    hours,
+    actualMD: hours / 8,
+    cost,
+    revenue,
+    assignedMD,
+    contribution,
+    margin,
+    utilization,
   }
 }

@@ -6,6 +6,7 @@ import { Separator } from '@/shared/ui/separator'
 import {
   dashboardCardContentClassName,
   dashboardCardHeaderClassName,
+  dashboardCardHeaderTitleClassName,
 } from '@/widgets/dashboard/ui/dashboard-card-styles'
 import { cn } from '@/shared/lib/cn'
 
@@ -20,12 +21,12 @@ export function ServerStatusCard({ status, hideStorage = false }: ServerStatusCa
   return (
     <Card className="overflow-hidden p-0 shadow-sm">
       <CardHeader className={dashboardCardHeaderClassName}>
-        <div className="min-w-0 space-y-1">
+        <div className={dashboardCardHeaderTitleClassName}>
           <CardTitle className="text-base font-semibold">서버 상태</CardTitle>
           <CardDescription>GPU, 백업 및 분류 현황</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className={cn('space-y-3', dashboardCardContentClassName)}>
+      <CardContent className={cn('space-y-4', dashboardCardContentClassName)}>
         {!hideStorage ? (
           <>
             <MetadataRow

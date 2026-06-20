@@ -26,6 +26,7 @@ export interface WorkUser {
   name: string
   role: 'employee' | 'manager'
   jobType: JobType
+  teamId: string
   monthlyCost: number
   favoriteProjectIds: string[]
 }
@@ -55,6 +56,7 @@ export function toWorkUser(user: User, profile: UserWorkProfile | undefined): Wo
     name: user.name,
     role: user.roleId === ROLE_IDS.MASTER ? 'manager' : 'employee',
     jobType: profile?.jobType ?? 'planning',
+    teamId: user.teamId,
     monthlyCost: profile?.monthlyCost ?? UNIFORM_MONTHLY_COST,
     favoriteProjectIds: profile?.favoriteProjectIds ?? [],
   }
