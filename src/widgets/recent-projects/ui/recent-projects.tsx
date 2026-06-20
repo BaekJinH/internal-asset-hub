@@ -22,7 +22,7 @@ export function RecentProjects({ projects, className }: RecentProjectsProps) {
   }
 
   return (
-    <section className={cn('grid gap-2 md:grid-cols-2', className)}>
+    <section className={cn('grid gap-stack md:grid-cols-2', className)}>
       {projects.map((project) => (
         <ProjectCard key={project.id} project={project} />
       ))}

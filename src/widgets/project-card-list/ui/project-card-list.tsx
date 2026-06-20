@@ -22,7 +22,7 @@ export function ProjectCardList({ projects, className }: ProjectCardListProps) {
   }
 
   return (
-    <div className={cn('grid gap-2 md:grid-cols-2 xl:grid-cols-3', className)}>
+    <div className={cn('grid gap-5 md:grid-cols-2 xl:grid-cols-3', className)}>
       {projects.map((project) => (
         <ProjectCard key={project.id} project={project} />
       ))}
