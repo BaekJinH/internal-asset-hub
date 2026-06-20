@@ -84,7 +84,7 @@ export function ProjectOpsForm({ project, onSave, onCancel }: ProjectOpsFormProp
   }
 
   return (
-    <div className="mt-4 space-y-4">
+    <div className="space-y-4">
       <div className="space-y-2">
         <Label>프로젝트명</Label>
         <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />

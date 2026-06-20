@@ -11,7 +11,7 @@ import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
 import { SimpleSelect } from '@/shared/ui/select'
 import { FormField } from '@/shared/ui/form-field'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { PageSection } from '@/shared/ui/page-section'
 import { APP_ROUTES } from '@/shared/config/routes'
 
 export function AssetRegisterForm() {
@@ -45,12 +45,9 @@ export function AssetRegisterForm() {
   }
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit}>
-      <Card className="p-0">
-        <CardHeader>
-          <CardTitle className="text-base">기본 정보</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4">
+    <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+      <PageSection title="기본 정보">
+        <div className="grid gap-4">
           <FormField label="자산 이름" htmlFor="asset-name" required error={errors.name}>
             <Input
               id="asset-name"
@@ -88,14 +85,11 @@ export function AssetRegisterForm() {
               options={Object.entries(ASSET_STATUS_LABELS).map(([value, label]) => ({ value, label }))}
             />
           </FormField>
-        </CardContent>
-      </Card>
+        </div>
+      </PageSection>
 
-      <Card className="p-0">
-        <CardHeader>
-          <CardTitle className="text-base">파일 및 링크</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4">
+      <PageSection title="파일 및 링크">
+        <div className="grid gap-4">
           <FormField label="파일 업로드" description="MVP에서는 UI 전용입니다.">
             <FileUploadBox />
           </FormField>
@@ -107,14 +101,11 @@ export function AssetRegisterForm() {
               placeholder="https://"
             />
           </FormField>
-        </CardContent>
-      </Card>
+        </div>
+      </PageSection>
 
-      <Card className="p-0">
-        <CardHeader>
-          <CardTitle className="text-base">메타데이터</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4">
+      <PageSection title="메타데이터">
+        <div className="grid gap-4">
           <FormField label="태그">
             <TagInput />
           </FormField>
@@ -126,8 +117,8 @@ export function AssetRegisterForm() {
               placeholder="자산 설명"
             />
           </FormField>
-        </CardContent>
-      </Card>
+        </div>
+      </PageSection>
 
       <Button type="submit">등록</Button>
     </form>
