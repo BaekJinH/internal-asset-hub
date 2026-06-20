@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+import tailwindcssAnimate from 'tailwindcss-animate'
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
@@ -79,6 +81,20 @@ export default {
   				5: 'rgb(var(--chart-5) / <alpha-value>)'
   			}
   		},
+  		spacing: {
+  			inline: 'var(--space-inline)',
+  			field: 'var(--space-field)',
+  			'stack-sm': 'var(--space-stack-sm)',
+  			stack: 'var(--space-stack)',
+  			section: 'var(--space-section)',
+  			page: 'var(--space-page)',
+  			widget: 'var(--space-widget)',
+  			'card-x': 'var(--space-card-x)',
+  			'card-y': 'var(--space-card-y)',
+  			'card-content': 'var(--space-card-content)',
+  			'list-row-y': 'var(--space-list-row-y)',
+  			'header-gap': 'var(--space-header-gap)',
+  		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
@@ -102,5 +118,5 @@ export default {
   		}
   	}
   },
-  plugins: [],
+  plugins: [tailwindcssAnimate],
 }

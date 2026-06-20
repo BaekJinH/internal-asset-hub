@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 @layer base {
   :root {
     /* Page */
@@ -43,6 +42,7 @@
     --ring: 99 102 241;
     --radius: 0.5rem;
 
+    /* layout-tokens.ts와 동기화 */
     --sidebar: 255 255 255;
     --sidebar-foreground: 15 23 42;
     --sidebar-muted: 100 116 139;
@@ -79,6 +79,87 @@
     --z-overlay: 50;
     --z-overlay-content: 51;
     --z-popover: 100;
+
+    /* Semantic spacing */
+    --space-inline: 0.5rem;
+    --space-field: 0.5rem;
+    --space-stack-sm: 0.75rem;
+    --space-stack: 1rem;
+    --space-section: 2rem;
+    --space-page: 2.5rem;
+    --space-widget: 2rem;
+    --space-card-x: 2rem;
+    --space-card-y: 1.5rem;
+    --space-card-content: 2rem;
+    --space-list-row-y: 1.125rem;
+    --space-header-gap: 0.5rem;
+  }
+
+  .dark {
+    --background: 15 23 42;
+    --foreground: 248 250 252;
+
+    --surface-popover: #1e293b;
+    --surface-popover-foreground: #f8fafc;
+    --surface-dialog: #1e293b;
+    --surface-sheet: #0f172a;
+
+    --card: 30 41 59;
+    --card-foreground: 248 250 252;
+
+    --popover: 30 41 59;
+    --popover-foreground: 248 250 252;
+
+    --primary: 99 102 241;
+    --primary-foreground: 255 255 255;
+    --primary-hover: 129 140 248;
+    --primary-muted: 30 27 75;
+    --primary-muted-foreground: 165 180 252;
+
+    --secondary: 51 65 85;
+    --secondary-foreground: 248 250 252;
+
+    --muted: 51 65 85;
+    --muted-foreground: 148 163 184;
+
+    --accent: 30 41 59;
+    --accent-foreground: 248 250 252;
+
+    --destructive: 239 68 68;
+    --destructive-foreground: 255 255 255;
+
+    --border: 51 65 85;
+    --input: 51 65 85;
+    --ring: 129 140 248;
+
+    --sidebar: 15 23 42;
+    --sidebar-foreground: 248 250 252;
+    --sidebar-muted: 148 163 184;
+    --sidebar-accent: 30 41 59;
+    --sidebar-accent-foreground: 248 250 252;
+    --sidebar-primary: 99 102 241;
+    --sidebar-primary-foreground: 255 255 255;
+    --sidebar-border: 51 65 85;
+    --sidebar-ring: 129 140 248;
+
+    --success: 34 197 94;
+    --success-foreground: 134 239 172;
+    --success-muted: 20 83 45;
+    --warning: 245 158 11;
+    --warning-foreground: 253 224 71;
+    --warning-muted: 113 63 18;
+    --danger: 239 68 68;
+    --danger-foreground: 252 165 165;
+    --danger-muted: 127 29 29;
+    --info: 99 102 241;
+    --info-foreground: 165 180 252;
+    --info-muted: 30 27 75;
+
+    --chart-1: 129 140 248;
+    --chart-2: 99 102 241;
+    --chart-3: 56 189 248;
+    --chart-4: 74 222 128;
+    --chart-5: 250 204 21;
   }
 
   * {
@@ -148,5 +229,110 @@
   [data-radix-tooltip-content] {
     background-color: rgb(var(--foreground));
     color: rgb(var(--background));
+  }
+
+  /* Sheet / Drawer slide + fade — keyframes so Radix receives animationend */
+  @keyframes sheet-overlay-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes sheet-overlay-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes sheet-slide-in-right {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes sheet-slide-out-right {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes sheet-slide-in-left {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes sheet-slide-out-left {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-100%);
+    }
+  }
+
+  @keyframes sheet-slide-in-bottom {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes sheet-slide-out-bottom {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  [data-sheet-overlay][data-state='open'] {
+    animation: sheet-overlay-in 300ms ease-out;
+  }
+
+  [data-sheet-overlay][data-state='closed'] {
+    animation: sheet-overlay-out 300ms ease-in;
+  }
+
+  [data-sheet-content][data-sheet-side='right'][data-state='open'] {
+    animation: sheet-slide-in-right 500ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  [data-sheet-content][data-sheet-side='right'][data-state='closed'] {
+    animation: sheet-slide-out-right 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  [data-sheet-content][data-sheet-side='left'][data-state='open'] {
+    animation: sheet-slide-in-left 500ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  [data-sheet-content][data-sheet-side='left'][data-state='closed'] {
+    animation: sheet-slide-out-left 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  [data-sheet-content][data-sheet-side='bottom'][data-state='open'] {
+    animation: sheet-slide-in-bottom 500ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  [data-sheet-content][data-sheet-side='bottom'][data-state='closed'] {
+    animation: sheet-slide-out-bottom 300ms cubic-bezier(0.32, 0.72, 0, 1);
   }
 }
