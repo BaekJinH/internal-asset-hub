@@ -9,12 +9,14 @@ import type { JobType } from '@/entities/project/model/project-types'
 import { JOB_TYPES, DEFAULT_WORK_CONFIG } from '@/shared/constants/workboard'
 import { downloadFile, toCSV } from '@/shared/lib/csv-utils'
 import { PageHeader } from '@/shared/ui/page-header'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { PageShell, PageShellSkeleton } from '@/shared/ui/page-shell'
+import { PageSection } from '@/shared/ui/page-section'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
-import { Skeleton } from '@/shared/ui/skeleton'
+import { Text } from '@/shared/ui/typography'
+import { pageCardListRowClassName } from '@/shared/constants/page-card-styles'
 import {
   Dialog,
   DialogContent,
@@ -110,18 +112,17 @@ export function OperationsSettingsPage() {
     toast.success('기본 월 원가가 저장되었습니다')
   }
 
-  if (loading) return <Skeleton className="h-64 w-full" />
+  if (loading) {
+    return <PageShellSkeleton title="운영 설정" description="팀원 프로필, 원가 설정, 데이터 백업" />
+  }
 
   return (
-    <div className="space-y-6">
+    <PageShell>
       <PageHeader title="운영 설정" description="팀원 프로필, 원가 설정, 데이터 백업" />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">원가 설정</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <div className="flex items-end justify-between gap-3 rounded-lg border px-4 py-3">
+      <PageSection title="원가 설정">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="flex items-end justify-between gap-3 rounded-lg border border-border/60 bg-muted/40 px-4 py-3">
             <div className="space-y-1">
               <Label>기본 월 원가</Label>
               <p className="text-sm font-medium tabular-nums">
@@ -140,14 +141,11 @@ export function OperationsSettingsPage() {
               onChange={(e) => setConfig({ ...config, weeklyHours: Number(e.target.value) })}
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </PageSection>
 
-      <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-base">팀원 프로필</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <PageSection title="팀원 프로필" padded={false} contentClassName="p-0">
+        <ul className="divide-y divide-border/60">
           {members.map((member) => {
             const profile = userProfiles.find((p) => p.userId === member.id) ?? {
               userId: member.id,
@@ -156,25 +154,27 @@ export function OperationsSettingsPage() {
               favoriteProjectIds: [],
             }
             return (
-              <div
+              <li
                 key={member.id}
-                className="flex items-center justify-between rounded-lg border px-4 py-3"
+                className={`flex items-center justify-between ${pageCardListRowClassName}`}
               >
                 <div>
-                  <div className="font-medium">{member.name}</div>
-                  <div className="text-sm text-muted-foreground">
+                  <Text as="p" size="body" className="font-medium">
+                    {member.name}
+                  </Text>
+                  <Text as="p" tone="muted" size="body">
                     {JOB_TYPES.find((j) => j.id === profile.jobType)?.name} ·{' '}
                     {profile.monthlyCost.toLocaleString()}원
-                  </div>
+                  </Text>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => setEditingProfile({ ...profile })}>
                   편집
                 </Button>
-              </div>
+              </li>
             )
           })}
-        </CardContent>
-      </Card>
+        </ul>
+      </PageSection>
 
       <Dialog open={defaultCostModalOpen} onOpenChange={setDefaultCostModalOpen}>
         <DialogContent className="sm:max-w-md">
@@ -252,11 +252,8 @@ export function OperationsSettingsPage() {
         </DialogContent>
       </Dialog>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">데이터 백업 / 가져오기</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
+      <PageSection title="데이터 백업 / 가져오기">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={handleExportJson}>
             <Download className="mr-2 h-4 w-4" /> JSON 백업
           </Button>
@@ -276,11 +273,11 @@ export function OperationsSettingsPage() {
               if (file) void handleImportJson(file)
             }}
           />
-          <p className="w-full text-xs text-muted-foreground">
+          <Text as="p" tone="muted" size="caption" className="w-full">
             JSON 가져오기 시 스케줄은 병합하지 않습니다.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+          </Text>
+        </div>
+      </PageSection>
+    </PageShell>
   )
 }

@@ -4,9 +4,18 @@ import { mockRoles } from '@/shared/mocks/mock-roles'
 import { mockUsers } from '@/shared/mocks/mock-users'
 import { getTeamById } from '@/shared/mocks/mock-org-structure'
 import { Badge } from '@/shared/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { DataTable, type DataTableColumn } from '@/shared/ui/data-table'
 import { PageHeader } from '@/shared/ui/page-header'
+import { PageShell } from '@/shared/ui/page-shell'
+import { PageSection } from '@/shared/ui/page-section'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/ui/table'
 import { cn } from '@/shared/lib/cn'
 
 interface UserRow {
@@ -55,71 +64,62 @@ export function AccessControlPage() {
   const userRows = buildUserRows()
 
   return (
-    <div className="space-y-6">
+    <PageShell>
       <PageHeader
         title="접근 제어"
         description="역할 기반 권한 설정 및 사용자별 역할 조회"
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">역할별 사용자</CardTitle>
-          <CardDescription>
-            마스터 4명(최준연, 최지니, 유지아, 허승) · 멤버 11명
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={userColumns}
-            data={userRows}
-            getRowKey={(row) => row.id}
-            emptyTitle="사용자 없음"
-            emptyDescription="등록된 사용자가 없습니다."
-          />
-        </CardContent>
-      </Card>
+      <PageSection
+        title="역할별 사용자"
+        description="마스터 4명(최준연, 최지니, 유지아, 허승) · 멤버 11명"
+        padded={false}
+        contentClassName="p-0"
+      >
+        <DataTable
+          columns={userColumns}
+          data={userRows}
+          getRowKey={(row) => row.id}
+          emptyTitle="사용자 없음"
+          emptyDescription="등록된 사용자가 없습니다."
+        />
+      </PageSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">권한 매트릭스</CardTitle>
-          <CardDescription>역할별 허용 권한 목록</CardDescription>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <table className="w-full min-w-[640px] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="px-3 py-2 text-left font-medium text-muted-foreground">권한</th>
-                {mockRoles.map((role) => (
-                  <th key={role.id} className="px-3 py-2 text-center font-medium">
-                    {role.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {allPermissions.map((permission) => (
-                <tr key={permission} className="border-b border-border/60">
-                  <td className="px-3 py-2 text-muted-foreground">
-                    {PERMISSION_LABELS[permission]}
-                  </td>
-                  {mockRoles.map((role) => {
-                    const allowed = role.permissions.includes(permission)
-                    return (
-                      <td key={role.id} className="px-3 py-2 text-center">
-                        {allowed ? (
-                          <Check className={cn('mx-auto h-4 w-4 text-primary')} />
-                        ) : (
-                          <X className="mx-auto h-4 w-4 text-muted-foreground/40" />
-                        )}
-                      </td>
-                    )
-                  })}
-                </tr>
+      <PageSection title="권한 매트릭스" description="역할별 허용 권한 목록" padded={false} contentClassName="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-muted-foreground">권한</TableHead>
+              {mockRoles.map((role) => (
+                <TableHead key={role.id} className="text-center">
+                  {role.label}
+                </TableHead>
               ))}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
-    </div>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {allPermissions.map((permission) => (
+              <TableRow key={permission}>
+                <TableCell className="text-muted-foreground">
+                  {PERMISSION_LABELS[permission]}
+                </TableCell>
+                {mockRoles.map((role) => {
+                  const allowed = role.permissions.includes(permission)
+                  return (
+                    <TableCell key={role.id} className="text-center">
+                      {allowed ? (
+                        <Check className={cn('mx-auto size-4 text-primary')} />
+                      ) : (
+                        <X className="mx-auto size-4 text-muted-foreground/40" />
+                      )}
+                    </TableCell>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </PageSection>
+    </PageShell>
   )
 }
