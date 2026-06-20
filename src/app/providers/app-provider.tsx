@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'sonner'
 
 interface AppProviderProps {
@@ -7,7 +8,7 @@ interface AppProviderProps {
 
 export function AppProvider({ children }: AppProviderProps) {
   return (
-    <>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="asset-hub-theme">
       {children}
       <Toaster
         richColors
@@ -20,6 +21,6 @@ export function AppProvider({ children }: AppProviderProps) {
           },
         }}
       />
-    </>
+    </ThemeProvider>
   )
 }
