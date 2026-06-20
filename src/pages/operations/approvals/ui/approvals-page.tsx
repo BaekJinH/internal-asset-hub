@@ -8,14 +8,19 @@ import { freezeTaskSnapshots } from '@/entities/schedule/lib/schedule-calc'
 import { computePendingRisks } from '@/entities/project/lib/project-metrics'
 import { ScheduleStatusBadge } from '@/entities/schedule/ui/schedule-status-badge'
 import { PageHeader } from '@/shared/ui/page-header'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { PageShell, PageShellSkeleton } from '@/shared/ui/page-shell'
+import { PageSection } from '@/shared/ui/page-section'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Textarea } from '@/shared/ui/textarea'
 import { Badge } from '@/shared/ui/badge'
-import { Skeleton } from '@/shared/ui/skeleton'
+import { EmptyState } from '@/shared/ui/empty-state'
+import { Text } from '@/shared/ui/typography'
 import { fmtHours } from '@/shared/lib/format-utils'
 import { getUserById } from '@/shared/mocks/mock-users'
+import { pageCardShellClassName } from '@/shared/constants/page-card-styles'
+import { Card } from '@/shared/ui/card'
+import { cn } from '@/shared/lib/cn'
 import type { Schedule } from '@/entities/schedule/model/schedule-types'
 
 export function ApprovalsPage() {
@@ -69,10 +74,12 @@ export function ApprovalsPage() {
     setSelected(null)
   }
 
-  if (loading) return <Skeleton className="h-64 w-full" />
+  if (loading) {
+    return <PageShellSkeleton title="승인" description="검토 대기 항목을 확인하고 승인합니다." />
+  }
 
   return (
-    <div className="space-y-6">
+    <PageShell>
       <PageHeader
         title="승인"
         description={`검토 대기 ${pending.length}건`}
@@ -83,8 +90,8 @@ export function ApprovalsPage() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="space-y-2">
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-6">
           {pending.map((s) => {
             const emp = getUserById(s.employeeId)
             const hours = s.tasks.reduce((a, t) => a + Number(t.hours), 0)
@@ -92,35 +99,34 @@ export function ApprovalsPage() {
             return (
               <Card
                 key={s.id}
-                className="cursor-pointer hover:border-primary/30"
+                className={cn(pageCardShellClassName, 'cursor-pointer transition-colors hover:border-primary/30')}
                 onClick={() => openDetail(s)}
               >
-                <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-base">
-                    {emp?.name} · {s.weekId} · {s.type === 'plan' ? '계획' : '실적'}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-row items-center justify-between gap-4 border-b border-border/60 px-6 py-5">
+                  <div className="min-w-0">
+                    <Text as="p" size="body" className="font-semibold">
+                      {emp?.name} · {s.weekId} · {s.type === 'plan' ? '계획' : '실적'}
+                    </Text>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
                     {isStale && <Badge tone="danger">적체</Badge>}
                     <ScheduleStatusBadge status={s.status} />
                   </div>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
+                </div>
+                <div className="px-6 py-5 text-sm text-muted-foreground">
                   {fmtHours(hours)} · {s.employeeComment || '코멘트 없음'}
-                </CardContent>
+                </div>
               </Card>
             )
           })}
           {!pending.length && (
-            <p className="text-sm text-muted-foreground">검토 대기 항목이 없습니다.</p>
+            <EmptyState title="검토 대기 없음" description="검토 대기 항목이 없습니다." />
           )}
         </div>
 
         {selected && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">승인 상세</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <PageSection title="승인 상세">
+            <div className="space-y-4">
               {selected.tasks.map((t, i) => {
                 const p = opsProjects.find((pp) => pp.id === t.projectId)
                 return (
@@ -155,10 +161,10 @@ export function ApprovalsPage() {
                   닫기
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </PageSection>
         )}
       </div>
-    </div>
+    </PageShell>
   )
 }

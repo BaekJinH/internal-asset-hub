@@ -1,12 +1,15 @@
 import { useMemo } from 'react'
+import { AlertTriangle, Briefcase, Clock } from 'lucide-react'
 import { useOperationsInit } from '@/features/operations-data/model/use-operations-init'
 import { useOperationsStore } from '@/features/operations-data/model/operations-store'
 import { useWorkUsers } from '@/features/operations-data/model/use-work-user'
 import { getOpsProjects } from '@/entities/project/lib/project-ops-adapter'
 import { computeProjectMetrics } from '@/entities/project/lib/project-metrics'
 import { PageHeader } from '@/shared/ui/page-header'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
-import { Skeleton } from '@/shared/ui/skeleton'
+import { PageShell, PageShellSkeleton } from '@/shared/ui/page-shell'
+import { SectionHeader } from '@/shared/ui/section-header'
+import { PageSection } from '@/shared/ui/page-section'
+import { StatCard } from '@/shared/ui/stat-card'
 import { fmtKRW, fmtMD, fmtPercent } from '@/shared/lib/format-utils'
 import { getISOWeekId } from '@/shared/lib/week-utils'
 
@@ -45,57 +48,55 @@ export function ReportPage() {
     [opsProjects, schedules, workUsers, config],
   )
 
-  if (loading) return <Skeleton className="h-64 w-full" />
+  if (loading) {
+    return (
+      <PageShellSkeleton
+        title="주간 임원 리포트"
+        description={`${weekId} · 확정 실적 기준`}
+      />
+    )
+  }
 
   return (
-    <div className="space-y-6">
+    <PageShell>
       <PageHeader
         title="주간 임원 리포트"
         description={`${weekId} · 확정 실적 기준`}
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">확정 실적 시간</CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">{fmtMD(totalHours)}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">활성 프로젝트</CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">{projectSummaries.length}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">위험 프로젝트</CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {projectSummaries.filter((p) => p.metrics.risks.length > 0).length}
-          </CardContent>
-        </Card>
-      </div>
-
-      <section className="space-y-3">
-        <h3 className="font-medium">프로젝트별 요약</h3>
-        {projectSummaries.map(({ project, metrics }) => (
-          <Card key={project.id}>
-            <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base">
-                {project.clientName} · {project.projectName}
-              </CardTitle>
-              <span className="text-sm text-muted-foreground">{fmtPercent(metrics.progress)}</span>
-            </CardHeader>
-            <CardContent className="grid gap-2 text-sm md:grid-cols-4">
-              <div>계약 {fmtKRW(metrics.revenue)}</div>
-              <div>실제 원가 {fmtKRW(metrics.actualCost)}</div>
-              <div>이익률 {fmtPercent(metrics.actualMargin)}</div>
-              <div>MD {fmtMD(metrics.actualHours)} / {fmtMD(metrics.contractHours)}</div>
-            </CardContent>
-          </Card>
-        ))}
+      <section className="grid gap-5 sm:grid-cols-3">
+        <StatCard title="확정 실적 시간" value={fmtMD(totalHours)} icon={Clock} />
+        <StatCard title="활성 프로젝트" value={String(projectSummaries.length)} icon={Briefcase} />
+        <StatCard
+          title="위험 프로젝트"
+          value={String(projectSummaries.filter((p) => p.metrics.risks.length > 0).length)}
+          icon={AlertTriangle}
+        />
       </section>
-    </div>
+
+      <section className="space-y-6">
+        <SectionHeader title="프로젝트별 요약" />
+        <div className="flex flex-col gap-6">
+          {projectSummaries.map(({ project, metrics }) => (
+            <PageSection
+              key={project.id}
+              title={`${project.clientName} · ${project.projectName}`}
+              actions={
+                <span className="text-sm text-muted-foreground">{fmtPercent(metrics.progress)}</span>
+              }
+            >
+              <div className="grid gap-2 text-sm md:grid-cols-4">
+                <div>계약 {fmtKRW(metrics.revenue)}</div>
+                <div>실제 원가 {fmtKRW(metrics.actualCost)}</div>
+                <div>이익률 {fmtPercent(metrics.actualMargin)}</div>
+                <div>
+                  MD {fmtMD(metrics.actualHours)} / {fmtMD(metrics.contractHours)}
+                </div>
+              </div>
+            </PageSection>
+          ))}
+        </div>
+      </section>
+    </PageShell>
   )
 }

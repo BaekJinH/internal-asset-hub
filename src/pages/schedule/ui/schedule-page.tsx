@@ -8,10 +8,15 @@ import { clonePlanTasksForActual, canDeleteSchedule, getEndingAssignments } from
 import { ScheduleStatusBadge } from '@/entities/schedule/ui/schedule-status-badge'
 import { ScheduleEditor } from '@/widgets/schedule-editor'
 import { PageHeader } from '@/shared/ui/page-header'
+import { PageShell, PageShellSkeleton } from '@/shared/ui/page-shell'
+import { SectionHeader } from '@/shared/ui/section-header'
+import { PageSection } from '@/shared/ui/page-section'
+import { Heading } from '@/shared/ui/typography'
 import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { EmptyState } from '@/shared/ui/empty-state'
-import { Skeleton } from '@/shared/ui/skeleton'
+import { pageCardListRowClassName, pageCardShellClassName } from '@/shared/constants/page-card-styles'
+import { Card } from '@/shared/ui/card'
+import { cn } from '@/shared/lib/cn'
 import { getISOWeekId, shiftWeek, getWeekRange } from '@/shared/lib/week-utils'
 import { fmtDate, fmtHours } from '@/shared/lib/format-utils'
 import type { Schedule } from '@/entities/schedule/model/schedule-types'
@@ -90,15 +95,17 @@ export function SchedulePage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-40 w-full" />
-      </div>
+      <PageShellSkeleton title="내 주간 업무" description="주간 계획과 실적을 관리합니다." />
     )
   }
 
   if (!user) {
-    return <EmptyState title="사용자 없음" description="로그인 후 이용해 주세요." />
+    return (
+      <PageShell>
+        <PageHeader title="내 주간 업무" description="주간 계획과 실적을 관리합니다." />
+        <EmptyState title="사용자 없음" description="로그인 후 이용해 주세요." />
+      </PageShell>
+    )
   }
 
   const { start, end } = getWeekRange(weekId)
@@ -107,7 +114,7 @@ export function SchedulePage() {
   if (editMode) {
     const existing = editMode === 'plan' ? planSch : actualSch
     return (
-      <div className="space-y-4">
+      <PageShell>
         <PageHeader
           title={editMode === 'plan' ? '주간 계획 편집' : '주간 실적 편집'}
           description={`${weekId} · ${fmtDate(start)} ~ ${fmtDate(end)}`}
@@ -122,14 +129,14 @@ export function SchedulePage() {
           onToggleFavorite={(pid) => toggleFavorite(user.id, pid)}
           onCancel={() => setEditMode(null)}
         />
-      </div>
+      </PageShell>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <PageShell>
       {previewUserId && isManager && (
-        <div className="flex items-center justify-between rounded-lg border border-warning/40 bg-warning-muted px-4 py-2 text-sm">
+        <div className="flex items-center justify-between rounded-lg border border-warning/40 bg-warning-muted px-6 py-4 text-sm">
           <span>관리자 프리뷰 모드</span>
           <Button variant="outline" size="sm" onClick={() => setPreviewUserId(null)}>
             종료
@@ -144,10 +151,10 @@ export function SchedulePage() {
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <div className="text-center">
-          <div className="font-semibold">{weekId}</div>
-          <div className="text-sm text-muted-foreground">
+          <Heading variant="subsection">{weekId}</Heading>
+          <p className="text-sm text-muted-foreground">
             {fmtDate(start)} ~ {fmtDate(end)}
-          </div>
+          </p>
         </div>
         <Button variant="outline" size="icon" onClick={() => setWeekId(shiftWeek(weekId, 1))}>
           <ChevronRight className="h-4 w-4" />
@@ -155,13 +162,13 @@ export function SchedulePage() {
       </div>
 
       {alerts.map((msg) => (
-        <div key={msg} className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning-muted px-4 py-2 text-sm">
+        <div key={msg} className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning-muted px-6 py-4 text-sm">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           {msg}
         </div>
       ))}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         <ScheduleHeroCard
           title="주간 계획"
           schedule={planSch}
@@ -184,51 +191,54 @@ export function SchedulePage() {
       </div>
 
       {ending.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">곧 종료되는 할당</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        <PageSection title="곧 종료되는 할당">
+          <div className="space-y-2">
             {ending.map(({ project, assignment }) => (
-              <div key={assignment.id} className="text-sm">
+              <p key={assignment.id} className="text-sm">
                 {project.clientName} · {project.projectName} — {assignment.endDate}까지
-              </div>
+              </p>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </PageSection>
       )}
 
-      <section className="space-y-2">
-        <h3 className="text-sm font-medium text-muted-foreground">최근 제출 내역</h3>
-        <div className="space-y-2">
-          {mySchedules
-            .filter((s) => s.status !== 'draft')
-            .sort((a, b) => (b.submittedAt ?? '').localeCompare(a.submittedAt ?? ''))
-            .slice(0, 12)
-            .map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                className="flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left hover:bg-accent/50"
-                onClick={() => {
-                  setWeekId(s.weekId)
-                  setEditMode(s.type)
-                }}
-              >
-                <span>
-                  {s.weekId} · {s.type === 'plan' ? '계획' : '실적'}
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {fmtHours(s.tasks.reduce((a, t) => a + Number(t.hours), 0))}
-                  </span>
-                  <ScheduleStatusBadge status={s.status} />
-                </div>
-              </button>
-            ))}
-        </div>
+      <section className="space-y-6">
+        <SectionHeader title="최근 제출 내역" />
+        <Card className={cn(pageCardShellClassName)}>
+          <ul className="divide-y divide-border/60">
+            {mySchedules
+              .filter((s) => s.status !== 'draft')
+              .sort((a, b) => (b.submittedAt ?? '').localeCompare(a.submittedAt ?? ''))
+              .slice(0, 12)
+              .map((s) => (
+                <li key={s.id}>
+                  <button
+                    type="button"
+                    className={cn(
+                      pageCardListRowClassName,
+                      'flex w-full items-center justify-between text-left transition-colors hover:bg-muted/30',
+                    )}
+                    onClick={() => {
+                      setWeekId(s.weekId)
+                      setEditMode(s.type)
+                    }}
+                  >
+                    <span>
+                      {s.weekId} · {s.type === 'plan' ? '계획' : '실적'}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {fmtHours(s.tasks.reduce((a, t) => a + Number(t.hours), 0))}
+                      </span>
+                      <ScheduleStatusBadge status={s.status} />
+                    </div>
+                  </button>
+                </li>
+              ))}
+          </ul>
+        </Card>
       </section>
-    </div>
+    </PageShell>
   )
 }
 
@@ -247,13 +257,12 @@ function ScheduleHeroCard({
 }) {
   const hours = schedule?.tasks?.reduce((a, t) => a + Number(t.hours), 0) ?? 0
   return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base">{title}</CardTitle>
-        {schedule && <ScheduleStatusBadge status={schedule.status} />}
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="text-2xl font-semibold">{fmtHours(hours)}</div>
+    <PageSection
+      title={title}
+      actions={schedule ? <ScheduleStatusBadge status={schedule.status} /> : undefined}
+    >
+      <div className="space-y-3">
+        <p className="text-2xl font-semibold tabular-nums tracking-tight">{fmtHours(hours)}</p>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={onEdit}>
             {schedule ? '편집' : '작성'}
@@ -265,7 +274,7 @@ function ScheduleHeroCard({
           )}
           {extraAction}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </PageSection>
   )
 }

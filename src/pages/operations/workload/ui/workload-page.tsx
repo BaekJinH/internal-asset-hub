@@ -8,11 +8,23 @@ import { computeEmployeeWeeklyTrend } from '@/entities/schedule/lib/employee-pl'
 import { Sparkline } from '@/widgets/sparkline'
 import { useWorkUsers } from '@/features/operations-data/model/use-work-user'
 import { PageHeader } from '@/shared/ui/page-header'
+import { PageShell, PageShellSkeleton } from '@/shared/ui/page-shell'
+import { PageSection } from '@/shared/ui/page-section'
+import { Heading } from '@/shared/ui/typography'
 import { Button } from '@/shared/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Progress } from '@/shared/ui/progress'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/shared/ui/sheet'
-import { Skeleton } from '@/shared/ui/skeleton'
+import { EmptyState } from '@/shared/ui/empty-state'
+import {
+  Sheet,
+  SheetBody,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/shared/ui/sheet'
+import { pageCardListRowClassName, pageCardShellClassName } from '@/shared/constants/page-card-styles'
+import { Card } from '@/shared/ui/card'
+import { cn } from '@/shared/lib/cn'
 import { fmtHours, fmtPercent } from '@/shared/lib/format-utils'
 import { getISOWeekId } from '@/shared/lib/week-utils'
 import type { WorkUser } from '@/entities/project/lib/project-ops-adapter'
@@ -28,14 +40,34 @@ export function WorkloadPage() {
   const navigate = useNavigate()
   const setPreviewUserId = useOperationsStore((s) => s.setPreviewUserId)
   const weekId = getISOWeekId(new Date())
+  const [sheetOpen, setSheetOpen] = useState(false)
   const [detail, setDetail] = useState<{ user: WorkUser; weekId: string } | null>(null)
+
+  const handleOpenDetail = (user: WorkUser) => {
+    setDetail({ user, weekId })
+    setSheetOpen(true)
+  }
+
+  const handleSheetOpenChange = (open: boolean) => {
+    setSheetOpen(open)
+    if (!open) {
+      window.setTimeout(() => setDetail(null), 350)
+    }
+  }
 
   const opsProjects = useMemo(() => getOpsProjects(projects), [projects])
 
-  if (loading) return <Skeleton className="h-64 w-full" />
+  if (loading) {
+    return (
+      <PageShellSkeleton
+        title="주간 부하"
+        description={`${weekId} 기준 팀원별 계획 시간과 가동률`}
+      />
+    )
+  }
 
   return (
-    <div className="space-y-6">
+    <PageShell>
       <PageHeader
         title="주간 부하"
         description={`${weekId} 기준 팀원별 계획 시간과 가동률`}
@@ -43,16 +75,16 @@ export function WorkloadPage() {
           <Button
             variant="outline"
             size="sm"
-              onClick={() => {
-                setPreviewUserId(detail?.user.id ?? workUsers[0]?.id ?? null)
-                navigate(APP_ROUTES.schedule)
-              }}
+            onClick={() => {
+              setPreviewUserId(detail?.user.id ?? workUsers[0]?.id ?? null)
+              navigate(APP_ROUTES.schedule)
+            }}
           >
             직원 모드 프리뷰
           </Button>
         }
       />
-      <div className="grid gap-4">
+      <div className="grid gap-6">
         {workUsers.map((user) => {
           const trend = computeEmployeeWeeklyTrend(schedules, user.id)
           const plan = schedules.find(
@@ -63,46 +95,47 @@ export function WorkloadPage() {
           return (
             <Card
               key={user.id}
-              className="cursor-pointer transition-colors hover:border-primary/30"
-              onClick={() => setDetail({ user, weekId })}
+              className={cn(pageCardShellClassName, 'cursor-pointer transition-colors hover:border-primary/30')}
+              onClick={() => handleOpenDetail(user)}
             >
-              <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-base">{user.name}</CardTitle>
+              <div className="flex flex-row items-center justify-between gap-4 border-b border-border/60 px-6 py-5">
+                <Heading variant="card">{user.name}</Heading>
                 <span className="text-sm text-muted-foreground">{fmtHours(hours)}</span>
-              </CardHeader>
-              <CardContent className="space-y-3">
+              </div>
+              <div className="space-y-3 px-6 py-5">
                 <div className="flex items-center gap-2 text-sm">
                   <span className="text-muted-foreground">가동률</span>
                   <span className="font-medium">{fmtPercent(utilization)}</span>
                 </div>
                 <Progress value={Math.min(utilization, 100)} />
                 <Sparkline data={trend} height={48} />
-              </CardContent>
+              </div>
             </Card>
           )
         })}
       </div>
 
-      <Sheet open={!!detail} onOpenChange={() => setDetail(null)}>
+      <Sheet open={sheetOpen} onOpenChange={handleSheetOpenChange}>
         <SheetContent side="right" className="w-full sm:max-w-md">
-          {detail && (
+          {detail ? (
             <>
               <SheetHeader>
-                <SheetTitle>
-                  {detail.user.name} · {detail.weekId}
-                </SheetTitle>
+                <SheetTitle>{detail.user.name}</SheetTitle>
+                <SheetDescription>{detail.weekId} · 주간 계획 및 실적</SheetDescription>
               </SheetHeader>
-              <ScheduleDetailContent
-                schedules={schedules}
-                userId={detail.user.id}
-                weekId={detail.weekId}
-                projects={opsProjects}
-              />
+              <SheetBody>
+                <ScheduleDetailContent
+                  schedules={schedules}
+                  userId={detail.user.id}
+                  weekId={detail.weekId}
+                  projects={opsProjects}
+                />
+              </SheetBody>
             </>
-          )}
+          ) : null}
         </SheetContent>
       </Sheet>
-    </div>
+    </PageShell>
   )
 }
 
@@ -118,22 +151,43 @@ function ScheduleDetailContent({
   projects: ReturnType<typeof getOpsProjects>
 }) {
   const weekSchedules = schedules.filter((s) => s.employeeId === userId && s.weekId === weekId)
+
+  if (!weekSchedules.length) {
+    return (
+      <EmptyState title="데이터 없음" description="해당 주차 데이터가 없습니다." />
+    )
+  }
+
   return (
-    <div className="mt-4 space-y-4">
+    <div className="flex flex-col gap-6">
       {weekSchedules.map((s) => (
-        <div key={s.id} className="space-y-2">
-          <div className="font-medium">{s.type === 'plan' ? '계획' : '실적'}</div>
-          {s.tasks.map((t, i) => {
-            const p = projects.find((pp) => pp.id === t.projectId)
-            return (
-              <div key={i} className="text-sm text-muted-foreground">
-                {t.date} · {p?.projectName ?? t.projectId} · {fmtHours(t.hours)}
-              </div>
-            )
-          })}
-        </div>
+        <PageSection
+          key={s.id}
+          title={s.type === 'plan' ? '계획' : '실적'}
+          padded={false}
+          contentClassName="p-0"
+        >
+          <ul className="divide-y divide-border/60">
+            {s.tasks.map((t, i) => {
+              const p = projects.find((pp) => pp.id === t.projectId)
+              return (
+                <li
+                  key={i}
+                  className={cn(
+                    pageCardListRowClassName,
+                    'flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3',
+                  )}
+                >
+                  <span className="font-medium text-foreground">{p?.projectName ?? t.projectId}</span>
+                  <span className="shrink-0 text-muted-foreground">
+                    {t.date} · {fmtHours(t.hours)}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        </PageSection>
       ))}
-      {!weekSchedules.length && <p className="text-sm text-muted-foreground">데이터 없음</p>}
     </div>
   )
 }
