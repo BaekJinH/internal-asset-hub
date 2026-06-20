@@ -26,7 +26,6 @@ function SidebarBrand() {
   return (
     <div className="flex items-center justify-center px-2 py-3">
       <BrandLogo
-        variant="on-light"
         size="md"
         className="h-7 max-w-[9.5rem] object-center group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:max-w-10"
       />

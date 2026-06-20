@@ -17,6 +17,7 @@ import {
 } from '@/shared/ui/dropdown-menu'
 import { Separator } from '@/shared/ui/separator'
 import { SidebarTrigger } from '@/shared/ui/sidebar'
+import { ThemeToggle } from '@/shared/ui/theme-toggle'
 
 import type { BreadcrumbItem } from '@/shared/ui/breadcrumb'
 
@@ -65,7 +66,9 @@ export function AppHeader() {
           <BreadcrumbPage className="sm:hidden">{label}</BreadcrumbPage>
         </div>
         {session ? (
-          <DropdownMenu>
+          <>
+            <ThemeToggle />
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
@@ -100,6 +103,7 @@ export function AppHeader() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </>
         ) : null}
       </div>
     </header>
