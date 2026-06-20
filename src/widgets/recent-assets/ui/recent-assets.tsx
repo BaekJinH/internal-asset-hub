@@ -24,7 +24,7 @@ export function RecentAssets({ assets, className }: RecentAssetsProps) {
   }
 
   return (
-    <section className={cn('grid gap-2 md:grid-cols-2', className)}>
+    <section className={cn('grid gap-stack md:grid-cols-2', className)}>
       {assets.map((asset) => (
         <Link
           key={asset.id}
