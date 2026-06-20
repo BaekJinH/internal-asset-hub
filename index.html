@@ -11,6 +11,17 @@
       rel="stylesheet"
     />
     <title>internal-asset-hub</title>
+    <script>
+      ;(function () {
+        try {
+          var theme = localStorage.getItem('asset-hub-theme')
+          var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+          if (theme === 'dark' || (theme === 'system' && systemDark) || (!theme && systemDark)) {
+            document.documentElement.classList.add('dark')
+          }
+        } catch (_) {}
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

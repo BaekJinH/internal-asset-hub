@@ -119,8 +119,12 @@ src/
 
 shadcn/ui 스타일의 디자인 토큰과 공유 컴포넌트를 `shared/ui/`에서 관리합니다.
 
-- **토큰:** `src/app/styles/globals.css` (CSS 변수), `src/shared/constants/design-tokens.ts` (레이아웃 상수)
+- **색상 토큰:** `src/app/styles/globals.css` (`:root` + `.dark` CSS 변수가 단일 소스)
+- **레이아웃/간격 참조:** `src/shared/constants/layout-tokens.ts`, `src/shared/constants/css-var-names.ts`
+- **테마:** `next-themes` (`ThemeProvider`), 헤더/설정의 `ThemeToggle` (light / dark / system)
 - **유틸:** `cn()` (`clsx` + `tailwind-merge`), `cva` 기반 variant
+- **Typography:** `Heading`, `Text` (`shared/ui/typography`)
+- **Spacing:** semantic token (`gap-widget`, `gap-page`, `px-card-x`, `py-list-row-y` 등 — `globals.css` + `tailwind.config.js`)
 - **레이아웃:** `widgets/app-layout` (사이드바/헤더/메인 패딩)
 - **주요 컴포넌트:** Button, Card, Badge, Input, Textarea, Select, Tabs, Table, Dialog, EmptyState, Skeleton, FormField, Tag
 
