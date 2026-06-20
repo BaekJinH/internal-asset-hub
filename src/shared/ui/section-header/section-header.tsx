@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { Heading } from '@/shared/ui/typography'
+import { Text } from '@/shared/ui/typography'
 
 interface SectionHeaderProps {
   title: string
@@ -8,10 +10,14 @@ interface SectionHeaderProps {
 
 export function SectionHeader({ title, description, actions }: SectionHeaderProps) {
   return (
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">{title}</h2>
-        {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
+        <Heading variant="section">{title}</Heading>
+        {description ? (
+          <Text as="p" tone="muted" className="mt-1">
+            {description}
+          </Text>
+        ) : null}
       </div>
       {actions}
     </div>

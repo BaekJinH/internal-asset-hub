@@ -1,3 +1,5 @@
+import { useTheme } from 'next-themes'
+import { useMounted } from '@/shared/lib/use-mounted'
 import { cn } from '@/shared/lib/cn'
 
 const LOGO_SRC = {
@@ -20,10 +22,15 @@ interface BrandLogoProps {
   className?: string
 }
 
-export function BrandLogo({ variant = 'on-light', size = 'md', className }: BrandLogoProps) {
+export function BrandLogo({ variant, size = 'md', className }: BrandLogoProps) {
+  const { resolvedTheme } = useTheme()
+  const mounted = useMounted()
+
+  const resolvedVariant = variant ?? (mounted && resolvedTheme === 'dark' ? 'on-dark' : 'on-light')
+
   return (
     <img
-      src={LOGO_SRC[variant]}
+      src={LOGO_SRC[resolvedVariant]}
       alt="tinto lab"
       className={cn('w-auto max-w-full object-contain object-left', SIZE_CLASSES[size], className)}
     />

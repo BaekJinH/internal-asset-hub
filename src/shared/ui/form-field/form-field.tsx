@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Label } from '@/shared/ui/label'
+import { Text } from '@/shared/ui/typography'
 import { cn } from '@/shared/lib/cn'
 
 interface FormFieldProps {
@@ -28,11 +29,15 @@ export function FormField({
         {required ? <span className="ml-1 text-destructive">*</span> : null}
       </Label>
       {children}
-      {description ? <p className="text-xs text-muted-foreground">{description}</p> : null}
+      {description ? (
+        <Text as="p" size="caption" tone="muted">
+          {description}
+        </Text>
+      ) : null}
       {error ? (
-        <p className="text-xs text-destructive" role="alert">
+        <Text as="p" size="caption" tone="destructive" role="alert">
           {error}
-        </p>
+        </Text>
       ) : null}
     </div>
   )

@@ -47,8 +47,8 @@ export const CommandList = forwardRef<
     ref={ref}
     className={cn(
       'max-h-[min(420px,60vh)] overflow-y-auto overflow-x-hidden p-2',
-      '[scrollbar-color:#cbd5e1_#ffffff] [scrollbar-width:thin]',
-      '[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-white',
+      '[scrollbar-color:rgb(var(--border))_rgb(var(--card))] [scrollbar-width:thin]',
+      '[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-card',
       className,
     )}
     {...props}

@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { Heading } from '@/shared/ui/typography'
+import { Text } from '@/shared/ui/typography'
 
 interface PageHeaderProps {
   title: string
@@ -10,8 +12,12 @@ export function PageHeader({ title, description, actions }: PageHeaderProps) {
   return (
     <header className="flex flex-wrap items-start justify-between gap-4">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
-        {description ? <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p> : null}
+        <Heading variant="page">{title}</Heading>
+        {description ? (
+          <Text as="p" size="lead" tone="muted" className="max-w-2xl">
+            {description}
+          </Text>
+        ) : null}
       </div>
       {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
     </header>

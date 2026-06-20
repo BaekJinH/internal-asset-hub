@@ -11,13 +11,18 @@ export const SheetTrigger = DialogPrimitive.Trigger
 export const SheetClose = DialogPrimitive.Close
 export const SheetPortal = DialogPrimitive.Portal
 
+const sheetOverlayClassName = 'data-sheet-overlay'
+
+const sheetContentBaseClassName = 'fixed z-[51] flex h-full flex-col overflow-hidden shadow-xl data-sheet-content'
+
 export const SheetOverlay = forwardRef<
   ElementRef<typeof DialogPrimitive.Overlay>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
-    className={cn(overlaySurfaces.backdrop, className)}
+    data-sheet-overlay
+    className={cn(overlaySurfaces.backdrop, sheetOverlayClassName, className)}
     {...props}
   />
 ))
@@ -33,21 +38,23 @@ export const SheetContent = forwardRef<ElementRef<typeof DialogPrimitive.Content
       <SheetOverlay />
       <DialogPrimitive.Content
         ref={ref}
+        data-sheet-content
+        data-sheet-side={side}
         className={cn(
           overlaySurfaces.sheet,
-          'fixed transition ease-in-out',
+          sheetContentBaseClassName,
           side === 'bottom' &&
             'inset-x-0 bottom-0 max-h-[90vh] rounded-t-xl border-t border-border',
           side === 'right' &&
             'inset-y-0 right-0 h-full w-full max-w-md border-l border-border',
           side === 'left' &&
-            'inset-y-0 left-0 h-full w-full max-w-none border-r border-border data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
+            'inset-y-0 left-0 h-full w-full max-w-none border-r border-border',
           className,
         )}
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+        <DialogPrimitive.Close className="absolute right-5 top-5 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
@@ -58,13 +65,18 @@ export const SheetContent = forwardRef<ElementRef<typeof DialogPrimitive.Content
 SheetContent.displayName = DialogPrimitive.Content.displayName
 
 export function SheetHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex flex-col space-y-1.5 border-b border-border/80 p-4 pr-12', className)} {...props} />
+  return (
+    <div
+      className={cn('flex shrink-0 flex-col space-y-1.5 border-b border-border/80 px-6 py-5 pr-14', className)}
+      {...props}
+    />
+  )
 }
 
 export function SheetTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
     <DialogPrimitive.Title
-      className={cn('text-base font-semibold leading-none tracking-tight text-foreground', className)}
+      className={cn('text-lg font-semibold leading-none tracking-tight text-foreground', className)}
       {...props}
     />
   )
@@ -78,7 +90,7 @@ export function SheetDescription({ className, ...props }: HTMLAttributes<HTMLPar
 
 export function SheetBody({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('min-h-0 flex-1 overflow-y-auto overscroll-contain p-4', className)} {...props}>
+    <div className={cn('min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-5', className)} {...props}>
       {children}
     </div>
   )

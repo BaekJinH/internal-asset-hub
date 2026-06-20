@@ -1,6 +1,8 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '@/shared/lib/cn'
+import { Heading } from '@/shared/ui/typography'
+import { Text } from '@/shared/ui/typography'
 
 interface EmptyStateProps {
   title: string
@@ -23,8 +25,12 @@ export function EmptyState({ title, description, icon: Icon, action, className }
           <Icon className="h-6 w-6 text-muted-foreground" />
         </div>
       ) : null}
-      <p className="text-base font-semibold text-foreground">{title}</p>
-      <p className="mt-1 max-w-sm text-sm text-muted-foreground">{description}</p>
+      <Heading as="h3" variant="card">
+        {title}
+      </Heading>
+      <Text as="p" tone="muted" className="mt-1 max-w-sm">
+        {description}
+      </Text>
       {action ? <div className="mt-4">{action}</div> : null}
     </div>
   )
