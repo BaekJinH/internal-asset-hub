@@ -1,4 +1,4 @@
-import type { Project } from '@/entities/project'
+import type { Project, ProjectTeamCategory } from '@/entities/project'
 import { ProjectCard } from '@/entities/project'
 import { EmptyState } from '@/shared/ui/empty-state'
 import { FolderKanban } from 'lucide-react'
@@ -6,10 +6,11 @@ import { cn } from '@/shared/lib/cn'
 
 interface ProjectCardListProps {
   projects: Project[]
+  teamContext?: ProjectTeamCategory
   className?: string
 }
 
-export function ProjectCardList({ projects, className }: ProjectCardListProps) {
+export function ProjectCardList({ projects, teamContext, className }: ProjectCardListProps) {
   if (projects.length === 0) {
     return (
       <EmptyState
@@ -24,7 +25,7 @@ export function ProjectCardList({ projects, className }: ProjectCardListProps) {
   return (
     <div className={cn('grid gap-5 md:grid-cols-2 xl:grid-cols-3', className)}>
       {projects.map((project) => (
-        <ProjectCard key={project.id} project={project} />
+        <ProjectCard key={project.id} project={project} teamContext={teamContext} />
       ))}
     </div>
   )

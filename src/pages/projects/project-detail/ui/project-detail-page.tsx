@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { CircleDollarSign, Clock, Percent, TrendingUp } from 'lucide-react'
-import { mockAssets } from '@/shared/mocks/mock-assets'
-import type { Asset } from '@/entities/asset'
+import { useAssetsByProjectQuery } from '@/entities/asset/api/asset-queries'
+import { useProjectQuery, useProjectsQuery } from '@/entities/project/api/project-queries'
 import { useOperationsInit } from '@/features/operations-data/model/use-operations-init'
 import { useOperationsStore } from '@/features/operations-data/model/operations-store'
 import { usePermission } from '@/features/auth/model/use-auth'
@@ -21,7 +21,15 @@ import { SectionHeader } from '@/shared/ui/section-header'
 import { PageSection } from '@/shared/ui/page-section'
 import { StatCard } from '@/shared/ui/stat-card'
 import { ProjectStatusBadge } from '@/entities/project'
+import { getProjectSyncSummary } from '@/entities/project/lib/project-sync-utils'
+import {
+  getProjectListMetadataSchema,
+  getProjectMetadataValues,
+} from '@/entities/project/lib/project-list-metadata'
+import { resolveProjectTeamCategory } from '@/entities/project/lib/project-team-utils'
+import { ProjectSyncBadges } from '@/entities/project/ui/project-sync-badges'
 import { AssetCategoryTabs, useAssetCategoryFilter } from '@/features/asset-category-filter'
+import { FigmaImportPanel } from '@/features/figma-import'
 import { AssetTable } from '@/widgets/asset-table'
 import { AiExtensionPreview } from '@/widgets/ai-extension-preview'
 import { DescriptionList } from '@/shared/ui/description-list'
@@ -31,25 +39,26 @@ import { Badge } from '@/shared/ui/badge'
 import { Progress } from '@/shared/ui/progress'
 import { Text } from '@/shared/ui/typography'
 import { fmtKRW, fmtMD, fmtPercent } from '@/shared/lib/format-utils'
+import { QUERY_PARAMS } from '@/shared/constants/query-param-keys'
+import { PROJECT_DETAIL_TAB_VALUES } from '@/shared/lib/query-param-validators'
+import { useQueryParamEnum } from '@/shared/lib/use-query-param'
 
 export function ProjectDetailPage() {
   useOperationsInit()
-  const projects = useOperationsStore((s) => s.projects)
+  const { projectId } = useParams<{ projectId: string }>()
+  const { data: projectFromQuery } = useProjectQuery(projectId)
+  const { data: projects = [] } = useProjectsQuery()
   const schedules = useOperationsStore((s) => s.schedules)
   const config = useOperationsStore((s) => s.config)
   const workUsers = useWorkUsers()
   const { checkPermission } = usePermission()
-  const assets = mockAssets as Asset[]
-  const { projectId } = useParams<{ projectId: string }>()
+  const { data: projectAssets = [] } = useAssetsByProjectQuery(projectId)
   const project = useMemo(
-    () => projects.find((item) => item.id === projectId),
-    [projects, projectId],
-  )
-  const projectAssets = useMemo(
-    () => assets.filter((asset) => asset.projectId === projectId),
-    [assets, projectId],
+    () => projectFromQuery ?? projects.find((item) => item.id === projectId),
+    [projectFromQuery, projects, projectId],
   )
   const { category, setCategory, filteredAssets } = useAssetCategoryFilter(projectAssets)
+  const [tab, setTab] = useQueryParamEnum(QUERY_PARAMS.tab, 'overview', PROJECT_DETAIL_TAB_VALUES)
 
   const opsView = project ? toOpsProjectView(project) : null
   const metrics = useMemo(() => {
@@ -61,6 +70,33 @@ export function ProjectDetailPage() {
     checkPermission(PERMISSIONS.OPERATIONS_VIEW) &&
     checkPermission(PERMISSIONS.FINANCIAL_VIEW) &&
     opsView != null
+
+  const activeTab = useMemo(() => {
+    if (tab === 'operations' && !canViewOps) return 'overview'
+    return tab
+  }, [tab, canViewOps])
+
+  const teamCategory = project ? resolveProjectTeamCategory(project) : 'dev'
+  const metadataSchema = getProjectListMetadataSchema(teamCategory)
+  const metadataValues = project ? getProjectMetadataValues(project, teamCategory) : {}
+
+  const overviewItems = useMemo(() => {
+    if (!project) return []
+    const syncedFields = metadataSchema
+      .filter((field) => metadataValues[field.key] && metadataValues[field.key] !== '—')
+      .map((field) => ({ label: field.label, value: metadataValues[field.key] }))
+
+    return [
+      ...syncedFields,
+      { label: '연동 상태', value: getProjectSyncSummary(project) },
+      ...(opsView
+        ? [
+            { label: '클라이언트', value: opsView.clientName },
+            { label: '계약 기간', value: `${opsView.startDate} ~ ${opsView.endDate}` },
+          ]
+        : []),
+    ]
+  }, [project, metadataSchema, metadataValues, opsView])
 
   if (!project) {
     return (
@@ -75,7 +111,10 @@ export function ProjectDetailPage() {
     <PageShell>
       <PageHeader title={project.name} description="프로젝트 상세 정보, 자산 및 운영" />
 
-      <TabsRoot defaultValue="overview">
+      <TabsRoot
+        value={activeTab}
+        onValueChange={(value) => setTab(value as (typeof PROJECT_DETAIL_TAB_VALUES)[number])}
+      >
         <TabsList>
           <TabsTrigger value="overview">개요</TabsTrigger>
           <TabsTrigger value="assets">자산</TabsTrigger>
@@ -88,20 +127,9 @@ export function ProjectDetailPage() {
             actions={<ProjectStatusBadge status={project.status} />}
           >
             <div className="space-y-4">
-              <DescriptionList
-                items={[
-                  { label: '담당자', value: project.owner },
-                  { label: '자산 수', value: `${project.assetCount}개` },
-                  { label: '설명', value: project.description },
-                  ...(opsView
-                    ? [
-                        { label: '클라이언트', value: opsView.clientName },
-                        { label: '계약 기간', value: `${opsView.startDate} ~ ${opsView.endDate}` },
-                      ]
-                    : []),
-                ]}
-              />
-              <div className="flex flex-wrap gap-2">
+              <DescriptionList items={overviewItems} />
+              <div className="flex flex-wrap items-center gap-2">
+                <ProjectSyncBadges project={project} />
                 {Object.entries(project.links).map(([name, url]) =>
                   url ? (
                     <Tag key={name} as="a" href={url}>
@@ -115,6 +143,9 @@ export function ProjectDetailPage() {
         </TabsContent>
 
         <TabsContent value="assets" className="space-y-6">
+          <PageSection title="Figma 연동" description="Figma 파일 URL을 프로젝트에 연결하거나 design 자산으로 가져옵니다.">
+            <FigmaImportPanel projectId={project.id} initialUrl={project.links.figma} />
+          </PageSection>
           <section>
             <SectionHeader title="자산 목록" description="카테고리별로 자산을 필터링합니다." />
             <AssetCategoryTabs value={category} onChange={setCategory} />

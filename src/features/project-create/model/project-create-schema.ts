@@ -1,5 +1,4 @@
-export interface ProjectCreateSchema {
-  name: string
-  description: string
-  owner: string
-}
+export {
+  projectCreateSchema,
+  type ProjectCreateFormValues,
+} from '@/features/project-ops-form/model/project-ops-form-schema'
