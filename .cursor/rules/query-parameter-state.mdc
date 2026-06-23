@@ -1,0 +1,67 @@
+---
+description: 탭·카테고리·필터 UI 상태는 URL query parameter와 동기화합니다.
+globs: src/pages/**/*.tsx,src/features/**/model/*.ts,src/shared/lib/use-query-param.ts
+alwaysApply: false
+---
+
+# Query Parameter State
+
+탭, 팀, 카테고리, 검색·필터 등 **공유 가능한 UI 상태**는 URL query parameter로 관리합니다.
+
+## 필수 규칙
+
+1. **키 이름은 `QUERY_PARAMS` 상수 사용** — [`query-param-keys.ts`](src/shared/constants/query-param-keys.ts)
+2. **훅은 `useQueryParam` / `useQueryParamEnum` 사용** — [`use-query-param.ts`](src/shared/lib/use-query-param.ts)
+3. **허용 값은 validator에 등록** — [`query-param-validators.ts`](src/shared/lib/query-param-validators.ts)
+4. **기본값과 같으면 param 제거** (URL 정리)
+5. **`setSearchParams`는 `{ replace: true }`** 로 history spam 방지
+6. **로컬 `useState`로만 탭/필터 관리 금지** (모달·시트 등 일시 UI 제외)
+
+## 표준 param 키
+
+| 키 | 용도 | 예시 값 |
+|----|------|---------|
+| `team` | 프로젝트 목록 팀 탭 | `dev`, `publishing`, `design` |
+| `tab` | 페이지 상세 탭 | `overview`, `assets`, `operations` |
+| `category` | 자산 카테고리 필터 | `all`, `planning`, `design`, … |
+| `status` | 상태 필터 | `all`, `active`, `draft`, … |
+| `q` | 검색어 | 임의 문자열 |
+| `view` | 뷰 전환 | `amount`, `md` |
+| `project`, `owner`, `tags`, `date` | 통합 검색 필터 | |
+
+## 라우트별 스키마
+
+[`QUERY_PARAM_SCHEMA`](src/shared/constants/query-param-keys.ts) 참고:
+
+- `/projects` → `team`, `status`, `q`
+- `/projects/:projectId` → `tab`, `category`
+- `/search` → `q`, `project`, `category`, `status`, `owner`, `tags`, `date`
+- `/operations/profit` → `view`
+
+## 구현 예시
+
+```tsx
+import { QUERY_PARAMS } from '@/shared/constants/query-param-keys'
+import { PROJECT_TEAM_VALUES } from '@/shared/lib/query-param-validators'
+import { useQueryParamEnum } from '@/shared/lib/use-query-param'
+
+const [team, setTeam] = useQueryParamEnum(QUERY_PARAMS.team, 'dev', PROJECT_TEAM_VALUES)
+```
+
+```tsx
+const [query, setQuery] = useQueryParam(QUERY_PARAMS.q, '')
+```
+
+## 새 탭/필터 추가 시 체크리스트
+
+- [ ] `QUERY_PARAMS`에 키 추가 (기존 키 재사용 가능하면 재사용)
+- [ ] `query-param-validators.ts`에 allowed values 추가
+- [ ] `QUERY_PARAM_SCHEMA`에 라우트 매핑 추가
+- [ ] 페이지/훅에서 `useQueryParam*` 적용
+- [ ] 공유 URL로 상태 복원되는지 확인
+
+## 예외 (query param 불필요)
+
+- Sheet/Dialog open 상태
+- 폼 입력 중간 상태
+- 선택 하이라이트(인스펙터 등) — 공유 필요 시에만 `asset` 등 추가
