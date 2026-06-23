@@ -26,4 +26,12 @@ export interface Asset {
   createdAt: string
   updatedAt: string
   relatedAssetIds: string[]
+  externalIds?: {
+    figmaFileKey?: string
+  }
+  syncSource?: 'manual' | 'figma'
+  syncMeta?: {
+    lastSyncedAt?: string
+  }
+  thumbnailUrl?: string
 }

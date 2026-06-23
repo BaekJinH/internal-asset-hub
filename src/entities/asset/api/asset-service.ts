@@ -1,14 +1,14 @@
-import { mockAssets } from '@/shared/mocks/mock-assets'
+import { fetchAssets, fetchAssetById, fetchAssetsByProject } from '@/entities/asset/api/asset-api'
 import type { Asset } from '@/entities/asset/model/asset-types'
 
 export const assetService = {
   async getAssets(): Promise<Asset[]> {
-    return Promise.resolve(mockAssets as Asset[])
+    return fetchAssets()
   },
   async getAssetById(assetId: string): Promise<Asset | undefined> {
-    return Promise.resolve((mockAssets as Asset[]).find((asset) => asset.id === assetId))
+    return fetchAssetById(assetId)
   },
   async getAssetsByProject(projectId: string): Promise<Asset[]> {
-    return Promise.resolve((mockAssets as Asset[]).filter((asset) => asset.projectId === projectId))
+    return fetchAssetsByProject(projectId)
   },
 }
