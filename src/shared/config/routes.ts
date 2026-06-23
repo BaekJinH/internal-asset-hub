@@ -10,6 +10,7 @@ export const APP_ROUTES = {
   settings: '/settings',
   settingsAccessControl: '/settings/access-control',
   settingsOperations: '/settings/operations',
+  settingsIntegrations: '/settings/integrations',
   schedule: '/schedule',
   scheduleEdit: '/schedule/:weekId/:type',
   operationsWorkload: '/operations/workload',

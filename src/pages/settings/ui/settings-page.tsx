@@ -8,6 +8,7 @@ import {
   Tags,
   ChevronRight,
   ClipboardList,
+  Link2,
 } from 'lucide-react'
 import { usePermission } from '@/features/auth/model/use-auth'
 import { PERMISSIONS } from '@/entities/role/model/role-types'
@@ -30,6 +31,13 @@ const SETTINGS_SECTIONS = [
     icon: ClipboardList,
     path: APP_ROUTES.settingsOperations,
     permission: PERMISSIONS.FINANCIAL_VIEW,
+  },
+  {
+    title: '외부 연동',
+    description: 'Notion API 확인, GitHub 프로젝트 리스트 동기화',
+    icon: Link2,
+    path: APP_ROUTES.settingsIntegrations,
+    permission: PERMISSIONS.SETTINGS_VIEW,
   },
   {
     title: '접근 제어',

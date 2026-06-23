@@ -10,6 +10,7 @@ import { AssetDetailPage } from '@/pages/assets/asset-detail'
 import { SearchPage } from '@/pages/search'
 import { AiExtensionPage } from '@/pages/ai-extension'
 import { SettingsPage } from '@/pages/settings'
+import { IntegrationsSettingsPage } from '@/pages/settings/integrations'
 import { AccessControlPage } from '@/pages/settings/access-control'
 import { OperationsSettingsPage } from '@/pages/settings/operations'
 import { SchedulePage } from '@/pages/schedule'
@@ -77,6 +78,14 @@ function ProtectedAppLayout() {
             element={
               <ProtectedRoute requiredPermission={PERMISSIONS.SETTINGS_VIEW}>
                 <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTE_PATHS.settingsIntegrations}
+            element={
+              <ProtectedRoute requiredPermission={PERMISSIONS.SETTINGS_VIEW}>
+                <IntegrationsSettingsPage />
               </ProtectedRoute>
             }
           />

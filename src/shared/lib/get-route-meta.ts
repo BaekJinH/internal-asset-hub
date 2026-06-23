@@ -16,6 +16,10 @@ const ROUTE_META: Record<string, RouteMeta> = {
     label: '접근 제어',
     breadcrumb: '설정 / 접근 제어',
   },
+  [APP_ROUTES.settingsIntegrations]: {
+    label: '외부 연동',
+    breadcrumb: '설정 / 외부 연동',
+  },
 }
 
 export function getRouteMeta(pathname: string): RouteMeta {
