@@ -1,7 +1,6 @@
 import { CircleDot, FolderKanban, Layers, ListFilter, SlidersHorizontal, User } from 'lucide-react'
 import type { AssetSearchFilters } from '@/features/asset-search'
 import { ASSET_CATEGORY_LABELS, ASSET_STATUS_LABELS } from '@/entities/asset'
-import { mockProjects } from '@/shared/mocks/mock-projects'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { FilterSelect } from '@/shared/ui/filter-select'
@@ -15,11 +14,18 @@ import { cn } from '@/shared/lib/cn'
 interface FilterToolbarProps {
   filters: AssetSearchFilters
   onChange: (filters: AssetSearchFilters) => void
+  projects?: Array<{ id: string; name: string }>
   className?: string
   variant?: 'card' | 'inline'
 }
 
-export function FilterToolbar({ filters, onChange, className, variant = 'card' }: FilterToolbarProps) {
+export function FilterToolbar({
+  filters,
+  onChange,
+  projects = [],
+  className,
+  variant = 'card',
+}: FilterToolbarProps) {
   const hasAdvancedFilters = Boolean(filters.owner || filters.tags || filters.date)
   const hasActiveFilters =
     filters.project !== 'all' ||
@@ -60,7 +66,7 @@ export function FilterToolbar({ filters, onChange, className, variant = 'card' }
           onChange={(value) => onChange({ ...filters, project: value })}
           options={[
             { value: 'all', label: '전체 프로젝트' },
-            ...mockProjects.map((project) => ({ value: project.id, label: project.name })),
+            ...projects.map((project) => ({ value: project.id, label: project.name })),
           ]}
           triggerClassName="w-[9.5rem] sm:w-[10.5rem]"
         />

@@ -13,6 +13,7 @@ interface SearchWorkspaceProps {
   filters: AssetSearchFilters
   onFiltersChange: (filters: AssetSearchFilters) => void
   activeFilterChips: ActiveFilterChip[]
+  projects?: Array<{ id: string; name: string }>
   onClearAllFilters?: () => void
   className?: string
 }
@@ -23,6 +24,7 @@ export function SearchWorkspace({
   filters,
   onFiltersChange,
   activeFilterChips,
+  projects,
   onClearAllFilters,
   className,
 }: SearchWorkspaceProps) {
@@ -34,7 +36,12 @@ export function SearchWorkspace({
         </div>
 
         <div className="px-4 py-3">
-          <SearchFilterPanel filters={filters} onChange={onFiltersChange} variant="inline" />
+          <SearchFilterPanel
+            filters={filters}
+            onChange={onFiltersChange}
+            projects={projects}
+            variant="inline"
+          />
           {activeFilterChips.length > 0 ? (
             <>
               <Separator className="my-3" />

@@ -1,16 +1,16 @@
 import type { AssetSearchFilters } from '@/features/asset-search'
 import { ASSET_CATEGORY_LABELS, ASSET_STATUS_LABELS } from '@/entities/asset'
-import { mockProjects } from '@/shared/mocks/mock-projects'
 import type { ActiveFilterChip } from '@/shared/ui/active-filter-chips'
 
 export function buildActiveFilterChips(
   filters: AssetSearchFilters,
   onChange: (filters: AssetSearchFilters) => void,
+  projects: Array<{ id: string; name: string }> = [],
 ): ActiveFilterChip[] {
   const chips: ActiveFilterChip[] = []
 
   if (filters.project !== 'all') {
-    const project = mockProjects.find((item) => item.id === filters.project)
+    const project = projects.find((item) => item.id === filters.project)
     chips.push({
       id: 'project',
       label: project?.name ?? filters.project,
