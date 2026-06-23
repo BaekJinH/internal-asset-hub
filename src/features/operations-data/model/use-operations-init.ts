@@ -1,14 +1,16 @@
 import { useEffect } from 'react'
-import { projectService } from '@/entities/project/api/project-service'
+import { useProjectsQuery } from '@/entities/project/api/project-queries'
 import { useOperationsStore } from '@/features/operations-data/model/operations-store'
 
 export function useOperationsInit() {
   const initialize = useOperationsStore((s) => s.initialize)
-  const loading = useOperationsStore((s) => s.loading)
+  const { data: projects, isPending, isError } = useProjectsQuery()
 
   useEffect(() => {
-    projectService.getProjects().then((projects) => initialize(projects))
-  }, [initialize])
+    if (projects) {
+      initialize(projects)
+    }
+  }, [initialize, projects])
 
-  return { loading }
+  return { loading: isPending && !isError }
 }

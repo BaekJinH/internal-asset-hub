@@ -1,8 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { mockProjects } from '@/shared/mocks/mock-projects'
-import type { Project } from '@/entities/project'
+import { useProjectsQuery } from '@/entities/project'
 import { ASSET_CATEGORY_LABELS, ASSET_STATUS_LABELS } from '@/entities/asset'
 import { FileUploadBox } from '@/features/file-upload'
 import { TagInput } from '@/features/tag-input'
@@ -15,10 +14,10 @@ import { PageSection } from '@/shared/ui/page-section'
 import { APP_ROUTES } from '@/shared/config/routes'
 
 export function AssetRegisterForm() {
-  const projects = mockProjects as Project[]
+  const { data: projects = [] } = useProjectsQuery()
   const navigate = useNavigate()
   const [name, setName] = useState('')
-  const [projectId, setProjectId] = useState(projects[0]?.id ?? '')
+  const [projectId, setProjectId] = useState('')
   const [owner, setOwner] = useState('')
   const [status, setStatus] = useState<keyof typeof ASSET_STATUS_LABELS>('draft')
   const [category, setCategory] = useState<keyof typeof ASSET_CATEGORY_LABELS>('planning')

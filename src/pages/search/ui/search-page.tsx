@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PanelRightOpen, PlusCircle } from 'lucide-react'
 import { mockAssets } from '@/shared/mocks/mock-assets'
-import { mockProjects } from '@/shared/mocks/mock-projects'
+import { useProjectsQuery } from '@/entities/project'
 import { useAssetSearch } from '@/features/asset-search'
 import { buildActiveFilterChips, clearAllFilters } from '@/widgets/search-filter/lib/build-active-filter-chips'
 import { SearchResults } from '@/widgets/search-results'
@@ -15,7 +15,6 @@ import { Button } from '@/shared/ui/button'
 import { APP_ROUTES } from '@/shared/config/routes'
 import { useMediaQuery } from '@/shared/lib/use-media-query'
 import type { Asset } from '@/entities/asset'
-import type { Project } from '@/entities/project'
 
 function hasActiveSearchState(query: string, filters: ReturnType<typeof useAssetSearch>['filters']) {
   return (
@@ -31,7 +30,7 @@ function hasActiveSearchState(query: string, filters: ReturnType<typeof useAsset
 
 export function SearchPage() {
   const assets = mockAssets as Asset[]
-  const projects = mockProjects as Project[]
+  const { data: projects = [] } = useProjectsQuery()
   const { query, setQuery, filters, setFilters, results, isLoading } = useAssetSearch(assets)
   const [selectedAssetId, setSelectedAssetId] = useState<string | undefined>()
   const [inspectorOpen, setInspectorOpen] = useState(false)
@@ -51,8 +50,8 @@ export function SearchPage() {
       .filter((asset): asset is Asset => Boolean(asset))
   }, [assets, selectedAsset])
   const activeFilterChips = useMemo(
-    () => buildActiveFilterChips(filters, setFilters),
-    [filters, setFilters],
+    () => buildActiveFilterChips(filters, setFilters, projects),
+    [filters, setFilters, projects],
   )
   const hasActiveSearch = hasActiveSearchState(query, filters)
 
@@ -96,6 +95,7 @@ export function SearchPage() {
         filters={filters}
         onFiltersChange={setFilters}
         activeFilterChips={activeFilterChips}
+        projects={projects}
         onClearAllFilters={activeFilterChips.length > 0 ? () => clearAllFilters(setFilters) : undefined}
       />
 

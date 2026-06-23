@@ -1,7 +1,5 @@
-import { useMemo } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { mockAssets } from '@/shared/mocks/mock-assets'
-import type { Asset } from '@/entities/asset'
+import { useParams } from 'react-router-dom'
+import { useAssetQuery } from '@/entities/asset/api/asset-queries'
 import { EmptyState } from '@/shared/ui/empty-state'
 import { PageHeader } from '@/shared/ui/page-header'
 import { PageShell } from '@/shared/ui/page-shell'
@@ -14,14 +12,22 @@ import { Text } from '@/shared/ui/typography'
 import { AiFeatureList } from '@/widgets/ai-feature-list'
 import { formatDate } from '@/shared/lib/format-date'
 import { formatFileSize } from '@/shared/lib/format-file-size'
-import { APP_ROUTES } from '@/shared/config/routes'
-import { pageCardListRowClassName } from '@/shared/constants/page-card-styles'
 import { cn } from '@/shared/lib/cn'
 
 export function AssetDetailPage() {
-  const assets = mockAssets as Asset[]
   const { assetId } = useParams<{ assetId: string }>()
-  const asset = useMemo(() => assets.find((item) => item.id === assetId), [assetId, assets])
+  const { data: asset, isPending } = useAssetQuery(assetId)
+
+  if (isPending) {
+    return (
+      <PageShell>
+        <PageHeader title="자산 상세" description="자산 상세 정보" />
+        <Text tone="muted" size="body">
+          불러오는 중...
+        </Text>
+      </PageShell>
+    )
+  }
 
   if (!asset) {
     return (
@@ -31,8 +37,6 @@ export function AssetDetailPage() {
       </PageShell>
     )
   }
-
-  const relatedAssets = assets.filter((item) => asset.relatedAssetIds.includes(item.id))
 
   return (
     <PageShell>
@@ -79,26 +83,12 @@ export function AssetDetailPage() {
         </div>
       </PageSection>
 
-      <PageSection title="관련 자산" padded={relatedAssets.length === 0} contentClassName={relatedAssets.length > 0 ? 'p-0' : undefined}>
-        {relatedAssets.length > 0 ? (
-          <ul className="divide-y divide-border/60">
-            {relatedAssets.map((item) => (
-              <li key={item.id} className={pageCardListRowClassName}>
-                <Link to={APP_ROUTES.assetDetail.replace(':assetId', item.id)}>
-                  <Text as="span" size="body" className="font-medium text-primary hover:underline">
-                    {item.name}
-                  </Text>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <EmptyState
-            title="관련 자산 없음"
-            description="연결된 관련 자산이 없습니다."
-            className={cn('border-none p-0 shadow-none')}
-          />
-        )}
+      <PageSection title="관련 자산" padded>
+        <EmptyState
+          title="관련 자산 없음"
+          description="연결된 관련 자산이 없습니다."
+          className={cn('border-none p-0 shadow-none')}
+        />
       </PageSection>
 
       <AiFeatureList variant="compact" />

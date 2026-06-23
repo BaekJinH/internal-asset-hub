@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useOperationsInit } from '@/features/operations-data/model/use-operations-init'
 import { useOperationsStore } from '@/features/operations-data/model/operations-store'
 import { useWorkUsers } from '@/features/operations-data/model/use-work-user'
@@ -10,6 +10,9 @@ import {
 import { computeEmployeePL, computeTeamPL } from '@/entities/schedule/lib/employee-pl'
 import { mockTeams, TEAM_IDS } from '@/shared/mocks/mock-org-structure'
 import { RISK_LABEL } from '@/shared/constants/workboard'
+import { QUERY_PARAMS } from '@/shared/constants/query-param-keys'
+import { PROFIT_VIEW_VALUES } from '@/shared/lib/query-param-validators'
+import { useQueryParamEnum } from '@/shared/lib/use-query-param'
 import { PageHeader } from '@/shared/ui/page-header'
 import { PageShell, PageShellSkeleton } from '@/shared/ui/page-shell'
 import { SectionHeader } from '@/shared/ui/section-header'
@@ -27,7 +30,7 @@ export function ProfitPage() {
   const projects = useOperationsStore((s) => s.projects)
   const config = useOperationsStore((s) => s.config)
   const workUsers = useWorkUsers()
-  const [view, setView] = useState<'amount' | 'md'>('amount')
+  const [view, setView] = useQueryParamEnum(QUERY_PARAMS.view, 'amount', PROFIT_VIEW_VALUES)
 
   const opsProjects = useMemo(
     () => getOpsProjects(projects).filter((p) => p.status !== 'cancelled'),

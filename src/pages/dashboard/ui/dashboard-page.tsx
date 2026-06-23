@@ -10,10 +10,9 @@ import {
   Search,
   Upload,
 } from 'lucide-react'
-import { mockProjects } from '@/shared/mocks/mock-projects'
+import { useProjectsQuery } from '@/entities/project'
 import { mockAssets } from '@/shared/mocks/mock-assets'
 import { mockServerStatus } from '@/shared/mocks/mock-server-status'
-import type { Project } from '@/entities/project'
 import type { Asset } from '@/entities/asset'
 import type { ServerStatus } from '@/entities/server'
 import { APP_ROUTES } from '@/shared/config/routes'
@@ -63,7 +62,7 @@ function DashboardChartsSkeleton() {
 
 export function DashboardPage() {
   const navigate = useNavigate()
-  const projects = mockProjects as Project[]
+  const { data: projects = [] } = useProjectsQuery()
   const assets = mockAssets as Asset[]
   const serverStatus = mockServerStatus as ServerStatus
   const [isLoading, setIsLoading] = useState(true)
