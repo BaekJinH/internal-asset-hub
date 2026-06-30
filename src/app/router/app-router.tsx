@@ -9,6 +9,7 @@ import { AssetRegisterPage } from '@/pages/assets/asset-register'
 import { AssetDetailPage } from '@/pages/assets/asset-detail'
 import { SearchPage } from '@/pages/search'
 import { AiExtensionPage } from '@/pages/ai-extension'
+import { DevPilotPage } from '@/pages/devpilot'
 import { SettingsPage } from '@/pages/settings'
 import { AccessControlPage } from '@/pages/settings/access-control'
 import { OperationsSettingsPage } from '@/pages/settings/operations'
@@ -32,6 +33,7 @@ function ProtectedAppLayout() {
           <Route path={ROUTE_PATHS.assetDetail} element={<AssetDetailPage />} />
           <Route path={ROUTE_PATHS.search} element={<SearchPage />} />
           <Route path={ROUTE_PATHS.aiExtension} element={<AiExtensionPage />} />
+          <Route path={ROUTE_PATHS.devpilot} element={<DevPilotPage />} />
           <Route
             path={ROUTE_PATHS.schedule}
             element={

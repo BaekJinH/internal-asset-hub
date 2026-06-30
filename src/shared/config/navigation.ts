@@ -12,6 +12,7 @@ import {
   PlusCircle,
   Search,
   Settings,
+  Sparkles,
   TrendingUp,
   Users,
 } from 'lucide-react'
@@ -87,6 +88,7 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
     label: '시스템',
     items: [
       { path: APP_ROUTES.aiExtension, label: 'AI 확장', icon: Bot },
+      { path: APP_ROUTES.devpilot, label: 'DevPilot', icon: Sparkles },
       { path: APP_ROUTES.settings, label: '설정', icon: Settings },
     ],
   },

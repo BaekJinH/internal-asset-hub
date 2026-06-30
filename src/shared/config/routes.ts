@@ -7,6 +7,7 @@ export const APP_ROUTES = {
   assetDetail: '/assets/:assetId',
   search: '/search',
   aiExtension: '/ai-extension',
+  devpilot: '/devpilot',
   settings: '/settings',
   settingsAccessControl: '/settings/access-control',
   settingsOperations: '/settings/operations',
