@@ -1,20 +1,77 @@
 /**
- * PHASE-2 — 생성 / CODEGEN orchestration (local Ollama).
+ * PHASE-2 — 생성 / CODEGEN orchestration.
  *
- * CANONICAL SOURCE (PHASE-MAP): n8n v31 stages S11→S19 translated to TS.
- *   S11 Routes/IA · S12 styles.css · S13 Components Contract · S15 Header/Footer ·
- *   S16 per-screen HTML + verify · S18 app.js · S19 quality-check + Dynamic Final Repair.
- * devpilot-v2 phase_4 verify gates (prop-shape, per-page retry, anti-flatness) are ABSORBED here,
- *   but devpilot-v2 phase_4 (Gemini/React) is NOT the codegen path — the target is chosen via emitters/.
+ * CANONICAL SOURCE (PHASE-MAP): n8n v31 stages S11→S19 translated to TS (styles/partials/per-screen HTML/
+ *   app.js/quality-check/Dynamic Final Repair). devpilot-v2 phase_4 verify gates absorbed here.
  *
- * INPUT = BuildManifest (from analyze). MODEL = local Ollama `qwen3-coder:30b` (company server,
- *   credential "Ollama account 2"); `deepseek-r1:32b` for verify gates. Fan-out per page.
+ * INPUT = BuildManifest (from analyze). The DETERMINISTIC floor runs NOW with NO LLM: the static emitter
+ *   already produces host-conformant pages (proven by slice.ts). Local Ollama (`qwen3-coder:30b`, company
+ *   server) is an ADDITIVE enrichment of page bodies through this same emitter — deferred until reachable.
  *
- * TODO(STEP 3 — adapt): translate n8n S11-S19 node prompts/code to TS; drive the selected emitter;
- *   run conformance gate after each emit; write FTRecord + checkpoint per page (see ../jobs).
+ * `generatePages` = per-page emit → Dynamic Final Repair → conformance gate → quality audit → PageArtifact.
+ *   Job orchestration / checkpointing lives in ../jobs; the HTTP seam in ../transport calls through both.
  */
-import type { BuildManifest } from '../contract'
+import type { AnalyzeRequest, BuildManifest, PageArtifact, PageError } from '../contract'
+import { getEmitter } from '../emitters'
+import { dynamicFinalRepair } from '../emitters/dynamic-final-repair'
+import { runGate } from '../conformance'
+import { runQualityAudit } from '../conformance/quality-audit'
 
-export async function generate(_manifest: BuildManifest, _pageIds?: string[]): Promise<{ jobId: string }> {
-  throw new Error('SCAFFOLD: Phase-2 generate not yet ported (STEP 3).')
+export interface GenerateOptions {
+  request?: AnalyzeRequest
+  pageIds?: string[]
+  jobId?: string
+  model?: string
+}
+
+export interface GenerateResult {
+  artifacts: PageArtifact[]
+  failed: PageError[]
+}
+
+/** Deterministic BuildManifest → PageArtifact[] (static target). No LLM; Ollama enrichment is additive-deferred. */
+export async function generatePages(manifest: BuildManifest, opts: GenerateOptions = {}): Promise<GenerateResult> {
+  const emitter = getEmitter('static')
+  const shared = [...(await emitter.emitShared(manifest))]
+  const targets = manifest.sitemap.filter((p) => !opts.pageIds || opts.pageIds.includes(p.pageId))
+
+  const artifacts: PageArtifact[] = []
+  const failed: PageError[] = []
+
+  for (const page of targets) {
+    try {
+      const pageFiles = [...(await emitter.emitPage(manifest, page))]
+      // repair over [shared + this page] — internal links resolve against the full manifest route map
+      const { files } = dynamicFinalRepair([...shared, ...pageFiles], manifest)
+      const gates = await runGate(files)
+      const audit = runQualityAudit(files, manifest)
+
+      artifacts.push({
+        pageId: page.pageId,
+        files, // self-contained deployable unit: shared assets + this page's HTML (repaired)
+        gates,
+        ftRecord: {
+          input: {
+            spec: opts.request?.spec ?? '(deterministic static emit)',
+            designRefMode: opts.request?.designRefMode ?? 'none',
+            conformanceProfile: opts.request?.conformanceProfile ?? 'default',
+          },
+          output: { files },
+          quality: {
+            gateScore: audit.qualityScore / 100,
+            gold: gates.dsConformance.pass && audit.qualityScore >= 90,
+          },
+          meta: {
+            model: opts.model ?? 'static-emitter@deterministic',
+            timestamp: new Date().toISOString(),
+            jobId: opts.jobId ?? '',
+          },
+        },
+      })
+    } catch (err) {
+      failed.push({ pageId: page.pageId, gate: 'emit', reason: err instanceof Error ? err.message : String(err) })
+    }
+  }
+
+  return { artifacts, failed }
 }

@@ -11,6 +11,7 @@
     "repair:self": "tsx repair.selfcheck.ts",
     "quality:self": "tsx quality.selfcheck.ts",
     "analyze:self": "tsx analyze.selfcheck.ts",
+    "transport:self": "tsx transport.selfcheck.ts",
     "dev": "tsx watch transport/index.ts"
   },
   "dependencies": {
