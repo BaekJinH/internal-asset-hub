@@ -21,6 +21,7 @@ codegen 산출물(HTML/CSS/JS/컴포넌트)을 emit하기 **직전·직후**, �
   - shipped `ConformanceTokenSet.denylist` = `{ rawColorLiteral: boolean; defaultPalette: boolean }` (enable-flag). 실제 패턴/팔레트 DATA는 `FORBIDDEN_PATTERNS`(엔진내부 상수)에.
   - IF 게이트에 새 금지 패턴 필요 THEN `FORBIDDEN_PATTERNS`에 추가 — **절대 shipped denylist를 string[]로 바꾸지 말 것**(host frozen, D1 errata 재발).
 - IF 위반 발견 THEN No-Hardcoded auto-repair(n8n S19/S20 이식분): route alias 링크 정규화 + 로컬 이미지→CSS/inline-SVG + dynamicCssBridge. repair 후 재게이트.
+- 진단 짝(3요소): 게이트(`runGate`)=순응 **강제**(hard) · repair(`dynamicFinalRepair`)=**수정** · audit(`server/conformance/quality-audit.ts` `runQualityAudit`, n8n S19 품질검사 이식)=완성도 **점수화**(advisory, `qualityScore=max(0,100−issues·25−warnings·3)`). audit은 게이트를 대체하지 않음 — 밀도/구조/placeholder/미정의 class를 가리켜 보강 지점 안내. 정적 스켈레톤의 밀도 warning은 정상(Ollama 본문 보강 전).
 - IF 통과 여부 확신<85% THEN 추측 금지 → 대상 파일 Read 후 재판정([UNVERIFIED]).
 
 ## 3. Example   [InlineExamples · CodeGrounding — 심볼 라이브 실재]

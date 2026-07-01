@@ -9,6 +9,7 @@ import { dirname, join } from 'node:path'
 import { getEmitter } from './emitters'
 import { dynamicFinalRepair } from './emitters/dynamic-final-repair'
 import { runGate } from './conformance'
+import { runQualityAudit } from './conformance/quality-audit'
 import { threePageManifest } from './fixtures/three-page-manifest'
 
 async function main() {
@@ -43,6 +44,16 @@ async function main() {
   for (const v of [...ds.colorLiteralViolations, ...ds.tokenViolations, ...ds.namingViolations])
     console.log(`   ✗ ${v}`)
   console.log(`GATE: ${ds.pass ? 'PASS ✅' : 'FAIL ❌'}`)
+
+  // ADVISORY: S19 정적 품질 audit (게이트와 별개 — 하드 pass/fail은 dsConformance).
+  const quality = runQualityAudit(files, manifest)
+  console.log('--- quality audit (S19, advisory) ---')
+  console.log(`   qualityScore: ${quality.qualityScore}/100 · issues=${quality.issues.length} warnings=${quality.warnings.length}`)
+  for (const i of quality.issues) console.log(`   ✗ issue: ${i}`)
+  for (const w of quality.warnings.slice(0, 8)) console.log(`   · warn: ${w}`)
+  if (quality.warnings.length > 8) console.log(`   … +${quality.warnings.length - 8} more warnings`)
+
+  // 정적 스켈레톤은 의도적으로 희소 → 밀도 warning은 정상(Ollama 본문 보강 전). 하드 게이트는 순응만.
   process.exitCode = ds.pass ? 0 : 1
 }
 

@@ -7,6 +7,9 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "slice": "tsx slice.ts",
+    "gate:self": "tsx gate.selfcheck.ts",
+    "repair:self": "tsx repair.selfcheck.ts",
+    "quality:self": "tsx quality.selfcheck.ts",
     "dev": "tsx watch transport/index.ts"
   },
   "dependencies": {},
