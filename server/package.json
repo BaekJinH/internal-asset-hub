@@ -10,9 +10,12 @@
     "gate:self": "tsx gate.selfcheck.ts",
     "repair:self": "tsx repair.selfcheck.ts",
     "quality:self": "tsx quality.selfcheck.ts",
+    "analyze:self": "tsx analyze.selfcheck.ts",
     "dev": "tsx watch transport/index.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
   "devDependencies": {
     "@types/node": "^24.12.3",
     "tsx": "^4.19.0",
