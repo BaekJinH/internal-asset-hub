@@ -1,0 +1,12 @@
+# Engine (server/) — local build + deps, never committed
+dist/
+node_modules/
+*.tsbuildinfo
+
+# Engine runtime artifacts (jobs, corpus, generated output)
+runs/
+corpus/*.jsonl
+
+# Secrets — impl-note: real .env never committed; only .env.example (repo root policy)
+.env
+.env.local

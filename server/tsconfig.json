@@ -1,0 +1,24 @@
+{
+  "//": "Engine build target — SEPARATE from the SPA. impl-note #2: NOT referenced by root tsconfig.json, so `pnpm build` (SPA) never compiles server/. Gate: `tsc -p server/tsconfig.json --noEmit` EXIT 0. Runtime execution (tsx/esbuild) is a STEP-3 decision.",
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["node"],
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@host-contract": ["./../src/entities/devpilot/model/devpilot-types"]
+    }
+  },
+  "include": ["./**/*.ts"],
+  "exclude": ["dist", "node_modules"]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@internal-asset-hub/devpilot-engine",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "DevPilot codegen engine (co-located, integrate-core-gui). Phase-1 cloud analyze + Phase-2 local Ollama codegen. Separate build target — NOT bundled into the SPA.",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "slice": "tsx slice.ts",
+    "dev": "tsx watch transport/index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.12.3",
+    "tsx": "^4.19.0",
+    "typescript": "~6.0.2"
+  },
+  "//": "SCAFFOLD/SLICE (STEP 1→3). The deterministic vertical slice needs NO runtime deps. STEP-3 deps added per stage when the stage lands: @google/generative-ai ^0.21 (Phase-1 analyze), ollama ^0.5 (Phase-2 → company Ollama server), zod ^3 (schema validation), playwright ^1.58 (L4 render gate), esbuild (L1 gate + bundle). HTTP framework (express vs fastify) = STEP-3 decision (transport uses node:http placeholder for now)."
+}
