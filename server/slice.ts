@@ -7,6 +7,7 @@
 import { mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { getEmitter } from './emitters'
+import { dynamicFinalRepair } from './emitters/dynamic-final-repair'
 import { runGate } from './conformance'
 import { threePageManifest } from './fixtures/three-page-manifest'
 
@@ -16,8 +17,10 @@ async function main() {
   const outDir = join(process.cwd(), 'runs', 'slice')
   rmSync(outDir, { recursive: true, force: true })
 
-  const files = [...(await emitter.emitShared(manifest))]
-  for (const page of manifest.sitemap) files.push(...(await emitter.emitPage(manifest, page)))
+  const emitted = [...(await emitter.emitShared(manifest))]
+  for (const page of manifest.sitemap) emitted.push(...(await emitter.emitPage(manifest, page)))
+  // Phase-2 pipeline: emit → Dynamic Final Repair (No-Hardcoded) → gate
+  const { files, report } = dynamicFinalRepair(emitted, manifest)
 
   for (const f of files) {
     const dest = join(outDir, f.path)
@@ -31,6 +34,7 @@ async function main() {
   console.log('=== DevPilot static vertical slice ===')
   console.log(`manifest : ${manifest.manifestId} · pages: ${manifest.sitemap.length} · target: ${emitter.target}`)
   console.log(`emitted  : ${files.length} files → ${outDir}`)
+  console.log(`repair   : unresolved=${report.unresolvedRoutes} imagesReplaced=${report.imagesReplaced} bridged=${report.bridgedClasses}`)
   for (const f of files) console.log(`   - ${f.path} (${f.content.length}B)`)
   console.log('--- conformance gate (reversal principle) ---')
   console.log(`   colorLiteralViolations: ${ds.colorLiteralViolations.length}`)

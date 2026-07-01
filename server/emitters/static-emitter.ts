@@ -11,7 +11,7 @@
 import type { Emitter, EmitTarget } from './index'
 import type { BuildManifest, PageSpec, GeneratedFile } from '../contract'
 
-function routeToFile(route: string): string {
+export function routeToFile(route: string): string {
   if (route === '/' || route === '') return 'index.html'
   return route.replace(/^\/+/, '').replace(/\/+$/, '') + '.html'
 }
