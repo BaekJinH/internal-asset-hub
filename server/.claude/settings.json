@@ -1,0 +1,28 @@
+{
+  "//": "DevPilot 엔진 하네스(server/-scoped). $CLAUDE_PROJECT_DIR는 server/를 루트로 여는 세션에서 해석됨(co-located 엔진, impl-note #4). 상대경로 금지(cwd 의존 silent no-op).",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/guards/post-write-check.js\"" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/guards/dangerous-command-check.js\"" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "python \"$CLAUDE_PROJECT_DIR/.claude/guards/harness-gate.py\"", "timeout": 120 }
+        ]
+      }
+    ]
+  }
+}
