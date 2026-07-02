@@ -21,7 +21,8 @@ import { DevelopmentPlanSchema, ScreenBlueprintSchema } from './ir'
 import type { DevelopmentPlan, ScreenBlueprint } from './ir'
 import { mapToBuildManifest } from './manifest-mapper'
 import type { ReferenceProfileSource } from './reference-profile'
-import { createModelClient } from './model-client'
+import { defaultProfileRegistry, type ProfileRegistry } from './profile-registry'
+import { createModelClient, type ModelClient } from './model-client'
 
 /**
  * Deterministic composition (verifiable now): validated phase outputs → BuildManifest.
@@ -37,8 +38,19 @@ export function buildManifestFromPhases(
   return mapToBuildManifest(plan, blueprint, req, reference)
 }
 
-export async function analyze(req: AnalyzeRequest): Promise<BuildManifest> {
-  const client = createModelClient()
+export async function analyze(
+  req: AnalyzeRequest,
+  registry: ProfileRegistry = defaultProfileRegistry,
+  client: ModelClient = createModelClient(),
+): Promise<BuildManifest> {
+  // ((B)④) DETERMINISTIC reference resolution — the registry maps conformanceProfile → an on-disk reference
+  // project whose tokens dominate conformance. This runs with NO cloud; an unregistered profile → undefined →
+  // resolveConformanceProfile falls back to the embed-host default (backward-compatible). When the cloud key
+  // lands (503→200 below), the resolved reference is threaded into the manifest with no further wiring (one-flip).
+  // `client` is injectable so the one-flip path (line: buildManifestFromPhases(..., reference)) is coverable now.
+  const reference: ReferenceProfileSource | undefined =
+    registry.resolveReference(req.conformanceProfile)?.profileSource ?? undefined
+
   if (!client.available) {
     throw new Error(
       'Phase-1 analyze DEFERRED: cloud model not configured. The deterministic plan+blueprint→BuildManifest ' +
@@ -53,7 +65,7 @@ export async function analyze(req: AnalyzeRequest): Promise<BuildManifest> {
   const plan = DevelopmentPlanSchema.parse(JSON.parse(planRes.text))
   const bpRes = await client.generateText(SYS_PHASE2, buildPhase2Prompt(req, plan))
   const blueprint = ScreenBlueprintSchema.parse(JSON.parse(bpRes.text))
-  return buildManifestFromPhases(plan, blueprint, req)
+  return buildManifestFromPhases(plan, blueprint, req, reference)
 }
 
 // Prompt scaffolds — full fidelity (devpilot prompts/v1/*.md + n8n domain rules) lands with the live wiring.

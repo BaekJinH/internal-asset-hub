@@ -86,7 +86,9 @@ export function mapToBuildManifest(
 
   const sharedComponents: ComponentSpec[] = [...usage.entries()]
     .filter(([, u]) => u.pages.size >= 2)
-    .sort((a, b) => a[0].localeCompare(b[0]))
+    // codepoint sort (NOT localeCompare): the BuildManifest IR must be byte-reproducible across host locales/
+    // ICU builds — mixed-case component_ids like 'HeroBanner' vs 'header' reorder under a locale collator.
+    .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
     .map(([name, u]) => ({ name, props: u.props, reusedBy: [...u.pages].sort() }))
 
   const manifestId =

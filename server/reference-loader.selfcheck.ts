@@ -5,6 +5,9 @@
  * Run: `tsx reference-loader.selfcheck.ts`.
  */
 import { fileURLToPath } from 'node:url'
+import { mkdtempSync, mkdirSync, writeFileSync, symlinkSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { buildReferenceFromDisk, loadReferenceProject } from './analyze/reference-loader'
 import { assembleManifest } from './analyze/assembler'
 import { resolveHostProfile } from './analyze/host-profile'
@@ -61,6 +64,50 @@ async function main() {
 
   const anyLiteralInProfile = Object.values(disk.profile.cssVars).some((v) => /#|rgb\(|hsl\(/.test(v))
 
+  // ── symlink path-fence teeth (adversarial-review (B)④): a symLINK AT componentsDir must fail closed, but a
+  //    symlink pointing INSIDE root must still load (no false positive). Cross-platform via junction. If the
+  //    environment forbids link creation (no privilege), the two checks self-skip rather than failing the suite.
+  const linkBase = mkdtempSync(join(tmpdir(), 'refloader-'))
+  let symlinkSupported = true
+  let escapeSymlinkThrew = false
+  let inRootSymlinkWalked = false
+  try {
+    // outside-root secret the reference must NOT reach
+    const outside = join(linkBase, 'outside')
+    mkdirSync(outside, { recursive: true })
+    writeFileSync(join(outside, 'Secret.tsx'), 'interface SecretProps { k: string }\nexport const Secret = (_: SecretProps) => null\n')
+
+    // projA — components/ is a symlink to the OUTSIDE dir → load must throw (escape via symlink)
+    const projA = join(linkBase, 'projA')
+    mkdirSync(projA, { recursive: true })
+    writeFileSync(join(projA, 'reference.config.json'), JSON.stringify({ profileId: 'ref:symlink-a' }))
+    writeFileSync(join(projA, 'globals.css'), ':root { --primary: 1 2 3; }\n')
+    symlinkSync(outside, join(projA, 'components'), 'junction')
+    try {
+      await buildReferenceFromDisk(projA)
+    } catch (err) {
+      escapeSymlinkThrew = /symlink|escape/i.test(err instanceof Error ? err.message : String(err))
+    }
+
+    // projB — components/ is a symlink to an IN-ROOT real dir → must load fine (walk traverses it)
+    const projB = join(linkBase, 'projB')
+    mkdirSync(join(projB, 'realcomps'), { recursive: true })
+    writeFileSync(join(projB, 'reference.config.json'), JSON.stringify({ profileId: 'ref:symlink-b' }))
+    writeFileSync(join(projB, 'globals.css'), ':root { --primary: 4 5 6; }\n')
+    writeFileSync(join(projB, 'realcomps', 'Widget.tsx'), 'interface WidgetProps { title: string }\nexport const Widget = (_: WidgetProps) => null\n')
+    symlinkSync(join(projB, 'realcomps'), join(projB, 'components'), 'junction')
+    const bRef = await buildReferenceFromDisk(projB)
+    inRootSymlinkWalked = Object.keys(bRef.catalog.components).length + bRef.catalog.rejected.length >= 1
+  } catch {
+    symlinkSupported = false // no link-creation privilege — self-skip the two symlink checks
+  } finally {
+    try {
+      rmSync(linkBase, { recursive: true, force: true })
+    } catch {
+      /* best-effort cleanup */
+    }
+  }
+
   const checks: Record<string, boolean> = {
     // config
     'config: loaded + validated (profileId, domain)':
@@ -87,6 +134,9 @@ async function main() {
     'dirty: unterminated final --ring declaration captured': disk.profile.cssVars['--ring'] === '217 119 6',
     'dirty: raw-hex token excluded': disk.profile.cssVars['--trap-hex'] === undefined,
     'reversal: no raw literal in any profile token value': anyLiteralInProfile === false,
+    // symlink path fence (self-skips where link creation is unprivileged)
+    'fence: symlinked componentsDir escaping root fails closed': !symlinkSupported || escapeSymlinkThrew,
+    'fence: symlink INSIDE root still loads (no false positive)': !symlinkSupported || inRootSymlinkWalked,
     // end-to-end on disk
     'e2e: assembled from disk, reference tokens dominate':
       manifest.conformanceTokens.cssVars['--primary'] === '217 119 6',
@@ -103,6 +153,7 @@ async function main() {
   console.log(`  loaded  : ${Object.keys(disk.catalog.components).length} components, rejected=[${disk.catalog.rejected.join(',')}], warnings=${disk.warnings.length}`)
   console.log(`  profile : --primary=${disk.profile.cssVars['--primary']} (dark ignored) · --card=${disk.profile.cssVars['--card']} (inherited) · --ring=${disk.profile.cssVars['--ring']} (no-semi)`)
   console.log(`  zod     : broken-config threw=${brokenThrew}`)
+  console.log(`  symlink : supported=${symlinkSupported} · escape→threw=${escapeSymlinkThrew} · in-root→walked=${inRootSymlinkWalked}`)
   console.log(`  e2e     : ${manifest.manifestId} sections=${manifest.sitemap[0].sections.length} gate=${gate.dsConformance.pass ? 'PASS' : 'FAIL'}`)
   console.log(ok ? 'LOADER SELF-CHECK: PASS ✅' : 'LOADER SELF-CHECK: FAIL ❌')
   process.exitCode = ok ? 0 : 1

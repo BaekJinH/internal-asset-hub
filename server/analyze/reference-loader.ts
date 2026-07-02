@@ -14,10 +14,12 @@
  *   `@media` overrides, and tolerates a missing final semicolon — so those do not corrupt the profile. A
  *   malformed reference.config.json FAILS CLOSED via zod. Missing optional files degrade to warnings.
  *
- * PATH FENCE: `root` is a trusted, caller-resolved path (from a reference registry / config, not user input in
- *   this deterministic phase). The loader only READS; it never writes and never leaves the given root.
+ * PATH FENCE: `root` is a trusted, caller-resolved path (from a reference registry / config), but the reference's
+ *   OWN config.cssPath/componentsDir are untrusted content. confinedPath fails closed on both a lexical `..`
+ *   escape AND a symLINK-at-the-path escape (realpath re-assert) — and walkFiles skips symlinked descendants.
+ *   The loader only READS; it never writes and never leaves the given root, even through a symlink.
  */
-import { readFile, readdir } from 'node:fs/promises'
+import { readFile, readdir, realpath } from 'node:fs/promises'
 import { basename, join, resolve, sep } from 'node:path'
 import type { ReferenceComponentSource } from './reference-catalog'
 import { buildReferenceCatalog, type ReferenceCatalog } from './reference-catalog'
@@ -40,17 +42,37 @@ export interface LoadedReference {
 }
 
 /**
- * PATH FENCE: resolve `rel` under `root` and assert it does not escape (via `..` or an absolute path). The
- * reference project (incl. its reference.config.json) is external content, so cssPath/componentsDir are
- * untrusted — a traversal attempt fails closed rather than reading arbitrary files. Returns the confined path.
+ * PATH FENCE (two layers): resolve `rel` under `root` and assert it does not escape. The reference project
+ * (incl. its reference.config.json) is external content, so cssPath/componentsDir are untrusted.
+ *   1. LEXICAL — a `..` / absolute-path escape fails closed before any fs access.
+ *   2. SYMLINK — a symLINK sitting AT the path (e.g. `globals.css` → /etc/passwd, or `components/` → an
+ *      external dir) is textually inside root and passes the lexical check, but readFile/readdir would follow
+ *      it OUT of the tree. So realpath the target and re-assert containment against the REAL root. A missing
+ *      target (ENOENT) is not an escape — it degrades to absent (the caller's read returns null / [] → host
+ *      fallback). The root prefix is realpath'd first so a legitimately symlinked references root is not itself
+ *      mistaken for an escape. (adversarial-review (B)④ round: closes the symlink hole the (B)② lexical fence left.)
  */
-function confinedPath(root: string, rel: string): string {
-  const rootAbs = resolve(root)
+async function confinedPath(root: string, rel: string): Promise<string> {
+  let rootAbs = resolve(root)
+  try {
+    rootAbs = await realpath(rootAbs)
+  } catch {
+    // root itself does not exist — keep the lexical prefix; downstream reads degrade to absent.
+  }
   const abs = resolve(rootAbs, rel)
   if (abs !== rootAbs && !abs.startsWith(rootAbs + sep)) {
     throw new Error(`reference path escapes project root (${rel})`)
   }
-  return abs
+  let real: string | null
+  try {
+    real = await realpath(abs)
+  } catch {
+    real = null // absent — not an escape
+  }
+  if (real !== null && real !== rootAbs && !real.startsWith(rootAbs + sep)) {
+    throw new Error(`reference path escapes project root via symlink (${rel})`)
+  }
+  return real ?? abs
 }
 
 /** codepoint-stable comparator — deterministic across locales/ICU builds (localeCompare is not). */
@@ -116,7 +138,7 @@ export async function loadReferenceProject(root: string): Promise<LoadedReferenc
 
   // profile source — the tokens CSS (path-fenced: cssPath cannot escape root)
   const cssRel = config.cssPath ?? 'globals.css'
-  const css = await readTextOrNull(confinedPath(root, cssRel))
+  const css = await readTextOrNull(await confinedPath(root, cssRel))
   let profileSource: ReferenceProfileSource | null = null
   if (css === null) {
     warnings.push(`tokens CSS not found at ${cssRel} — conformance falls back to the embed-host profile`)
@@ -131,7 +153,7 @@ export async function loadReferenceProject(root: string): Promise<LoadedReferenc
 
   // component sources — discover .tsx/.jsx (path-fenced), filter non-components, skip empties + basename collisions
   const componentsRel = config.componentsDir ?? 'components'
-  const files = await walkFiles(confinedPath(root, componentsRel))
+  const files = await walkFiles(await confinedPath(root, componentsRel))
   if (files.length === 0) warnings.push(`no files under ${componentsRel}`)
   const componentSources: ReferenceComponentSource[] = []
   const seen = new Set<string>()

@@ -10,13 +10,16 @@
  *
  * WIRING: /generate + /jobs are DETERMINISTIC and live NOW (static emit→repair→gate→audit via ../generate
  *   + ../jobs). /analyze calls the real Phase-1 analyze(), which is cloud-gated → honest 503 until a
- *   GEMINI key lands (stub→real is a one-line flip, no seam change). Auth/CORS = engine-side (host sends none).
+ *   GEMINI key lands (stub→real is a one-line flip, no seam change). ((B)④) A ProfileRegistry is injected
+ *   and passed to analyze(): it resolves `conformanceProfile` → reference project DETERMINISTICALLY now, so
+ *   the reference is threaded the instant the cloud flips on. Auth/CORS = engine-side (host sends none).
  *
  * Framework: built-in node:http (no framework committed pre-GA; P/L precedent = express, revisit at GA).
  */
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import type { AnalyzeRequest } from '../contract'
 import { analyze } from '../analyze'
+import { defaultProfileRegistry, type ProfileRegistry } from '../analyze/profile-registry'
 import { createJob, getJob, getPage } from '../jobs'
 
 function sendJson(res: ServerResponse, status: number, body: unknown): void {
@@ -31,7 +34,13 @@ async function readJsonBody(req: IncomingMessage): Promise<unknown> {
   return raw ? JSON.parse(raw) : {}
 }
 
-export function createEngineServer() {
+/**
+ * `registry` ((B)④) maps `AnalyzeRequest.conformanceProfile` → a reference project whose tokens dominate
+ * conformance. It is injectable (a bootstrap registers references from a configured root); the default is the
+ * empty module registry, so an un-bootstrapped server behaves exactly as before (every profile → host default).
+ */
+export function createEngineServer(opts: { registry?: ProfileRegistry } = {}) {
+  const registry = opts.registry ?? defaultProfileRegistry
   return createServer(async (req: IncomingMessage, res: ServerResponse) => {
     try {
       const method = req.method ?? 'GET'
@@ -51,7 +60,7 @@ export function createEngineServer() {
           return sendJson(res, 400, { error: 'invalid JSON body' })
         }
         try {
-          return sendJson(res, 200, await analyze(body as AnalyzeRequest))
+          return sendJson(res, 200, await analyze(body as AnalyzeRequest, registry))
         } catch (err) {
           return sendJson(res, 503, {
             error: err instanceof Error ? err.message : String(err),

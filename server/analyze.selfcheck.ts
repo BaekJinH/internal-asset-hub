@@ -34,6 +34,24 @@ async function main() {
   const header = manifest.sharedComponents.find((c) => c.name === 'site_header')
   const footer = manifest.sharedComponents.find((c) => c.name === 'site_footer')
 
+  // 2b. determinism tooth (adversarial-review (B)④): sharedComponents must be CODEPOINT-sorted, not locale-sorted.
+  //     mixed-case ids 'HeroBanner' vs 'header' → codepoint keeps 'HeroBanner' first (H=72<h=104); en-US
+  //     localeCompare flips them. The lowercase site_* fixture above masks this, so drive a mixed-case case.
+  const detPlan = {
+    project_overview: { project_name: 'det' },
+    pages: [
+      { page_id: 'page_home', page_name: 'Home', user_flow_order: 1 },
+      { page_id: 'page_two', page_name: 'Two', user_flow_order: 2 },
+    ],
+  }
+  const detBp = {
+    pages: [
+      { page_id: 'page_home', page_name: 'Home', layout_tree: [{ component_id: 'HeroBanner' }, { component_id: 'header' }] },
+      { page_id: 'page_two', page_name: 'Two', layout_tree: [{ component_id: 'HeroBanner' }, { component_id: 'header' }] },
+    ],
+  }
+  const detShared = mapToBuildManifest(detPlan, detBp, req).sharedComponents.map((c) => c.name)
+
   // 3. reversal proof — ThemeConfig hex must NOT be in conformanceTokens; host token must be
   const tokensStr = JSON.stringify(manifest.conformanceTokens)
   const noHexLeak = !tokensStr.includes('#') && !tokensStr.toLowerCase().includes('4f46e5')
@@ -59,6 +77,8 @@ async function main() {
     'map: about dependsOn = [page_home]': about.dependsOn.length === 1 && about.dependsOn[0] === 'page_home',
     'map: home sections exclude chrome (3)': home.sections.length === 3 && !home.sections.some((s) => /header|footer/i.test(s)),
     'map: sharedComponents = 2 (header+footer)': manifest.sharedComponents.length === 2,
+    'determinism: sharedComponents codepoint-sorted (HeroBanner before header)':
+      detShared.length === 2 && detShared[0] === 'HeroBanner' && detShared[1] === 'header',
     'map: site_header reusedBy 3 + props.title:string': !!header && header.reusedBy.length === 3 && header.props.title === 'string',
     'map: site_footer reusedBy 3': !!footer && footer.reusedBy.length === 3,
     'reversal: no ThemeConfig hex in tokens': noHexLeak,
