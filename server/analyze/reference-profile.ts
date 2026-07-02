@@ -42,10 +42,11 @@ export interface ReferenceProfileSource {
 
 /**
  * Match ONLY sanctioned channel tokens: `--name: R G B` where R/G/B are 0–255 decimals separated by spaces,
- * terminated by `;` OR end-of-block (CSS lets the final declaration omit its semicolon). This is the reversal
- * gate at the parser — hex / rgb()/hsl() literals cannot match and are silently excluded.
+ * an optional trailing `!important`, terminated by `;` OR end-of-block (CSS lets the final declaration omit
+ * its semicolon). This is the reversal gate at the parser — hex / rgb()/hsl() literals cannot match. Custom
+ * property names are CASE-SENSITIVE in CSS, so the captured name's case is preserved.
  */
-const CHANNEL_TOKEN = /--([a-z0-9-]+)\s*:\s*(\d{1,3}\s+\d{1,3}\s+\d{1,3})\s*(?:;|$)/gi
+const CHANNEL_TOKEN = /--([a-zA-Z0-9-]+)\s*:\s*(\d{1,3}\s+\d{1,3}\s+\d{1,3})\s*(?:!\s*important)?\s*(?:;|$)/g
 
 /** true if the value is three 0–255 integers separated by whitespace (defensive re-validation). */
 function isChannelTriple(value: string): boolean {
@@ -53,25 +54,90 @@ function isChannelTriple(value: string): boolean {
   return parts.length === 3 && parts.every((p) => /^\d{1,3}$/.test(p) && Number(p) <= 255)
 }
 
-/**
- * The FIRST `:root { ... }` block body (comments stripped). `:root` is the sanctioned source of tokens (mirrors
- * the conformance gate, which exempts only the `:root` block). Scoping here means alternate-selector blocks
- * (`.dark {}`, `@media (prefers-color-scheme: dark) {}`) and commented-out declarations CANNOT override the
- * light-mode tokens — last-write-wins over the whole file would otherwise silently pick the wrong triples.
- */
-function firstRootBody(css: string): string {
-  const noComments = css.replace(/\/\*[\s\S]*?\*\//g, '')
-  const m = noComments.match(/:root\s*\{([^}]*)\}/i)
-  return m ? m[1] : ''
+/** strip `/* … *​/` comments, INCLUDING an unterminated trailing comment (CSS extends it to end-of-file). */
+function stripComments(css: string): string {
+  return css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\*[\s\S]*$/, '')
 }
 
-/** parse a reference CSS string → { '--token': 'R G B' } map, keeping only sanctioned channel tokens in :root. */
+/** the balanced `{ … }` body starting at `openIdx` (the `{`); tolerant of an unclosed block (→ to EOF). */
+function balancedBody(s: string, openIdx: number): { body: string; end: number } {
+  let depth = 0
+  for (let i = openIdx; i < s.length; i++) {
+    if (s[i] === '{') depth++
+    else if (s[i] === '}' && --depth === 0) return { body: s.slice(openIdx + 1, i), end: i }
+  }
+  return { body: s.slice(openIdx + 1), end: s.length - 1 }
+}
+
+/** keep only chars at the block's OWN depth — nested `{ … }` (native nesting, nested @media) are dropped. */
+function depthZeroDecls(body: string): string {
+  let out = ''
+  let depth = 0
+  for (const ch of body) {
+    if (ch === '{') depth++
+    else if (ch === '}') depth = Math.max(0, depth - 1)
+    else if (depth === 0) out += ch
+  }
+  return out
+}
+
+/**
+ * Bodies of every TOP-LEVEL, light-mode `:root` rule (a brace-depth scanner over comment-stripped CSS):
+ *   - `:root` may be any member of a selector list (`:root, :host { … }`) — matched as a list member, not by
+ *     abutting `{`, so grouped selectors are not silently dropped;
+ *   - a `:root` nested inside a CONDITIONAL at-rule (@media/@supports/@container/@scope) or another selector
+ *     is EXCLUDED — those are dark/responsive/scoped overrides, not the base; `@layer` wrappers are transparent;
+ *   - source order is NOT trusted: a conditional `:root` placed before the base one cannot become law.
+ * Multiple qualifying `:root` blocks are all returned (design systems split tokens across blocks).
+ */
+function rootBodies(css: string): string[] {
+  const s = stripComments(css)
+  const bodies: string[] = []
+  const stack: Array<'root' | 'cond' | 'layer' | 'other'> = []
+  let prelude = ''
+  let i = 0
+  while (i < s.length) {
+    const ch = s[i]
+    if (ch === '{') {
+      const sel = prelude.trim()
+      prelude = ''
+      let type: 'root' | 'cond' | 'layer' | 'other'
+      if (/^@(media|supports|container|scope)\b/i.test(sel)) type = 'cond'
+      else if (/^@layer\b/i.test(sel)) type = 'layer'
+      else if (sel.startsWith('@')) type = 'other'
+      else if (sel.split(',').some((m) => m.trim() === ':root')) type = 'root'
+      else type = 'other'
+      const ancestorsClear = stack.every((f) => f === 'layer')
+      if (type === 'root' && ancestorsClear) {
+        const { body, end } = balancedBody(s, i)
+        bodies.push(body)
+        i = end + 1
+        continue
+      }
+      stack.push(type)
+    } else if (ch === '}') {
+      stack.pop()
+      prelude = ''
+    } else if (ch === ';') {
+      prelude = '' // statement (@import, declaration) boundary — reset the pending selector prelude
+    } else {
+      prelude += ch
+    }
+    i++
+  }
+  return bodies
+}
+
+/**
+ * Parse a reference CSS string → { '--token': 'R G B' }, keeping only sanctioned channel tokens declared at the
+ * top level of light-mode `:root` blocks. Later blocks override earlier ones (split-by-concern token files).
+ */
 export function extractCssVars(css: string): Record<string, string> {
   const cssVars: Record<string, string> = {}
-  for (const m of firstRootBody(css).matchAll(CHANNEL_TOKEN)) {
-    const name = `--${m[1].toLowerCase()}`
+  const decls = rootBodies(css).map(depthZeroDecls).join(';\n')
+  for (const m of decls.matchAll(CHANNEL_TOKEN)) {
     const value = m[2].replace(/\s+/g, ' ').trim()
-    if (isChannelTriple(value)) cssVars[name] = value
+    if (isChannelTriple(value)) cssVars[`--${m[1]}`] = value
   }
   return cssVars
 }
@@ -106,8 +172,9 @@ export function extractProfileFromCss(
     // COLOR/TOKEN layer — reference dominates for declared tokens, inherits the rest from the host base:
     cssVars,
     colorTokens: deriveColorTokens(cssVars),
-    colorBearingPrefixes: source.colorBearingPrefixes ?? base.colorBearingPrefixes,
-    utilityLayerClasses: source.utilityLayerClasses ?? base.utilityLayerClasses,
+    // an empty array means "inherit" (not "blank the gate's color-bearing scan") — only a non-empty list overrides:
+    colorBearingPrefixes: source.colorBearingPrefixes?.length ? source.colorBearingPrefixes : base.colorBearingPrefixes,
+    utilityLayerClasses: source.utilityLayerClasses?.length ? source.utilityLayerClasses : base.utilityLayerClasses,
     // STRUCTURAL governance — host-canonical (frozen literal-typed fields), reference cannot override:
     denylist: base.denylist,
     namingRules: base.namingRules,

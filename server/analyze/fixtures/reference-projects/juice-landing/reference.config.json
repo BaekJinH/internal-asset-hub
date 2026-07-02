@@ -1,0 +1,8 @@
+{
+  "profileId": "ref:juice-landing",
+  "cssPath": "globals.css",
+  "componentsDir": "components",
+  "domain": "ecommerce",
+  "colorBearingPrefixes": ["bg-", "text-", "border-", "ring-"],
+  "utilityLayerClasses": ["container", "section", "card", "flex", "grid"]
+}

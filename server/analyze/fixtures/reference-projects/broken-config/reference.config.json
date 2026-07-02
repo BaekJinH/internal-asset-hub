@@ -1,0 +1,4 @@
+{
+  "profileId": 123,
+  "unknownField": "should be rejected by .strict()"
+}

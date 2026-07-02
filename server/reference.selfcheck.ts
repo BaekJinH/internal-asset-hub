@@ -42,11 +42,20 @@ async function main() {
   const noTokens = extractProfileFromCss({ profileId: 'empty', css: 'body { color: red; }' }, host)
   const anyLiteralInTokens = Object.values(cssVars).some((v) => /#|rgb\(|hsl\(/.test(v))
 
-  // regression teeth (adversarial-review findings): merge-completeness · :root scoping · semicolon tolerance
+  // regression teeth (adversarial-review round 1): merge-completeness · :root scoping · semicolon tolerance
   const partial = extractProfileFromCss({ profileId: 'partial', css: ':root { --primary: 10 20 30; }' }, host)
   const darkScoped = extractCssVars(':root { --primary: 10 20 30; }\n.dark { --primary: 99 99 99; }')
   const noSemi = extractCssVars(':root {\n  --primary: 10 20 30\n}')
   const commented = extractCssVars(':root {\n  --primary: 10 20 30;\n}\n/* --primary: 99 99 99; */')
+
+  // regression teeth (adversarial-review round 2 — messy real CSS beyond the fixture)
+  const grouped = extractCssVars(':root, :host { --primary: 5 6 7; }')
+  const darkFirst = extractCssVars('@media (prefers-color-scheme: dark){ :root { --primary: 99 99 99; } }\n:root { --primary: 5 6 7; }')
+  const nested = extractCssVars(':root { --a: 1 2 3; @media (min-width: 600px){ --a: 99 99 99; } --b: 4 5 6; }')
+  const multiRoot = extractCssVars(':root { --primary: 5 6 7; }\n:root { --accent: 8 9 10; }')
+  const important = extractCssVars(':root { --primary: 5 6 7 !important; }')
+  const caseKept = extractCssVars(':root { --Brand: 1 2 3; --brand: 9 9 9; }')
+  const unclosedComment = extractCssVars('/* commented out\n:root { --evil: 250 0 0; }')
 
   // ── 3. PIPELINE ───────────────────────────────────────────────────────────────────────────────
   const req: AnalyzeRequest = {
@@ -103,6 +112,13 @@ async function main() {
     'scope: .dark block cannot override :root token': darkScoped['--primary'] === '10 20 30',
     'scope: commented-out declaration is ignored': commented['--primary'] === '10 20 30',
     'terminator: final unterminated declaration is captured': noSemi['--primary'] === '10 20 30',
+    'grouped: :root, :host selector list captured': grouped['--primary'] === '5 6 7',
+    'order: conditional :root before base cannot win': darkFirst['--primary'] === '5 6 7',
+    'nesting: nested @media ignored, trailing token kept': nested['--a'] === '1 2 3' && nested['--b'] === '4 5 6',
+    'multi-root: tokens across blocks merged': multiRoot['--primary'] === '5 6 7' && multiRoot['--accent'] === '8 9 10',
+    'important: trailing !important tolerated': important['--primary'] === '5 6 7',
+    'case: --Brand and --brand kept distinct': caseKept['--Brand'] === '1 2 3' && caseKept['--brand'] === '9 9 9',
+    'comment: unterminated comment strips its :root': unclosedComment['--evil'] === undefined,
     'resolver: resolveConformanceProfile(ref) yields reference tokens':
       resolveConformanceProfile(req.conformanceProfile, sampleReferenceProfile).cssVars['--primary'] === REF_PRIMARY,
     'resolver: resolveConformanceProfile(no ref) yields host tokens':

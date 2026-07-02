@@ -1,0 +1,34 @@
+/*
+ * Juice-landing reference tokens — deliberately MESSY real-world CSS to exercise loader/parser robustness:
+ *   :root nested in @layer · a .dark override · an @media dark override · comments · an omitted token
+ *   (--card, must inherit the host base) · a raw-hex trap · a final declaration with no trailing semicolon.
+ */
+@import "./reset.css";
+
+@layer base {
+  :root {
+    --background: 255 251 235;
+    --foreground: 41 37 36;
+    --primary: 217 119 6;
+    --primary-foreground: 255 255 255;
+    --secondary: 254 243 199;
+    --muted: 245 245 244;
+    --accent: 234 88 12;
+    --border: 231 229 228;
+    /* --card intentionally omitted → must inherit the embed-host base token via merge */
+    --trap-hex: #ff0000; /* raw literal — MUST NOT become a token */
+    --ring: 217 119 6
+  }
+}
+
+/* dark theme — MUST NOT override the light :root tokens above */
+.dark {
+  --primary: 30 41 59;
+  --background: 15 23 42;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: 2 6 23;
+  }
+}

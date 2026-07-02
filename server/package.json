@@ -14,6 +14,7 @@
     "transport:self": "tsx transport.selfcheck.ts",
     "reference:self": "tsx reference.selfcheck.ts",
     "selection:self": "tsx selection.selfcheck.ts",
+    "loader:self": "tsx reference-loader.selfcheck.ts",
     "dev": "tsx watch transport/index.ts"
   },
   "dependencies": {
