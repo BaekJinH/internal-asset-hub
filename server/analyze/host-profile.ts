@@ -1,17 +1,22 @@
 /**
- * HOST CONFORMANCE PROFILE resolver — the REVERSAL PRINCIPLE at the analyze boundary.
+ * CONFORMANCE PROFILE resolver — the REVERSAL PRINCIPLE at the analyze boundary.
  *
- * `AnalyzeRequest.conformanceProfile` selects the host `ConformanceTokenSet` that DOMINATES codegen.
- * conformanceTokens are sourced HERE (from the host design system), NEVER from devpilot ThemeConfig —
- * so generated output conforms to the host, and devpilot's raw-hex theme decisions cannot leak into the IR.
+ * `AnalyzeRequest.conformanceProfile` selects the `ConformanceTokenSet` that DOMINATES codegen. Tokens are
+ * sourced HERE, NEVER from devpilot ThemeConfig — so generated output conforms, and raw-hex theme decisions
+ * cannot leak into the IR.
  *
- * cssVars mirror the real host `src/app/styles/globals.css` :root channel tokens (space-separated RGB, the
- * `rgb(var(--token))` sources the emitter uses). Verified against globals.css (e.g. --border: 203 213 225 —
- * NOT the fixture's older 226 232 240 approximation; this resolver is the corrected source of truth).
+ * GENERALIZATION (workorder §4, (B) increment-①): the conformance SOURCE is a PUBLISHER REFERENCE PROJECT (an
+ *   accumulating cushion corpus), not tinto-gui. tinto-gui is only the EMBED HOST — its tokens are the fallback
+ *   'default' profile used when no reference project is supplied. `resolveConformanceProfile(profile, ref)`
+ *   makes the reference's tokens law when a reference source is present (see reference-profile.ts); otherwise it
+ *   returns the embed-host default below. Reference dominates the COLOR/TOKEN layer; structural governance
+ *   (denylist enable-flags · namingRules · fsdLanding) stays host-canonical.
  *
- * MVP = single 'default' host profile. Additional named profiles are an ADDITIVE extension (host stays frozen).
+ * `HOST_DEFAULT_CSS_VARS` mirror the real embed-host `src/app/styles/globals.css` :root channel tokens
+ * (space-separated RGB, the `rgb(var(--token))` sources the emitter uses; e.g. --border: 203 213 225).
  */
 import type { ConformanceTokenSet } from '../contract'
+import { extractProfileFromCss, type ReferenceProfileSource } from './reference-profile'
 
 /** Real host globals.css :root channel tokens (rgb(var(--token)) sources). */
 const HOST_DEFAULT_CSS_VARS: Record<string, string> = {
@@ -31,7 +36,7 @@ const HOST_DEFAULT_CSS_VARS: Record<string, string> = {
   '--ring': '99 102 241',
 }
 
-/** profile name → host ConformanceTokenSet. Unknown profiles fall back to 'default' (host-frozen). */
+/** The embed-host ('default') ConformanceTokenSet. This is the fallback when no reference project is supplied. */
 export function resolveHostProfile(_profile: string): ConformanceTokenSet {
   return {
     cssVars: { ...HOST_DEFAULT_CSS_VARS },
@@ -48,4 +53,19 @@ export function resolveHostProfile(_profile: string): ConformanceTokenSet {
       entity: 'src/entities',
     },
   }
+}
+
+/**
+ * GENERALIZED resolver (workorder §4): if a reference-project source is supplied, its extracted tokens are LAW
+ * (reference dominates the color layer over the embed-host governance base); otherwise return the 'default'
+ * embed-host profile. Synchronous + pure — the reference `css` string is produced by the deferred loader.
+ * Falls back to host when the reference declares no sanctioned channel tokens (extractProfileFromCss → null).
+ */
+export function resolveConformanceProfile(
+  profile: string,
+  reference?: ReferenceProfileSource,
+): ConformanceTokenSet {
+  const host = resolveHostProfile(profile)
+  if (!reference) return host
+  return extractProfileFromCss(reference, host) ?? host
 }

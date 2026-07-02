@@ -20,15 +20,21 @@ import type { AnalyzeRequest, BuildManifest } from '../contract'
 import { DevelopmentPlanSchema, ScreenBlueprintSchema } from './ir'
 import type { DevelopmentPlan, ScreenBlueprint } from './ir'
 import { mapToBuildManifest } from './manifest-mapper'
+import type { ReferenceProfileSource } from './reference-profile'
 import { createModelClient } from './model-client'
 
-/** Deterministic composition (verifiable now): validated phase outputs → BuildManifest. */
+/**
+ * Deterministic composition (verifiable now): validated phase outputs → BuildManifest.
+ * `reference` (optional) = a publisher reference project's profile source ((B) increment-①); when supplied its
+ * tokens dominate conformance. The deferred loader resolves it from the reference project; today fixtures prove it.
+ */
 export function buildManifestFromPhases(
   plan: DevelopmentPlan,
   blueprint: ScreenBlueprint,
   req: AnalyzeRequest,
+  reference?: ReferenceProfileSource,
 ): BuildManifest {
-  return mapToBuildManifest(plan, blueprint, req)
+  return mapToBuildManifest(plan, blueprint, req, reference)
 }
 
 export async function analyze(req: AnalyzeRequest): Promise<BuildManifest> {

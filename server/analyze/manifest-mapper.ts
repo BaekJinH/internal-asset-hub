@@ -16,7 +16,8 @@
  */
 import type { AnalyzeRequest, BuildManifest, ComponentSpec, PageSpec } from '../contract'
 import type { ComponentNode, DevelopmentPlan, ScreenBlueprint } from './ir'
-import { resolveHostProfile } from './host-profile'
+import { resolveConformanceProfile } from './host-profile'
+import type { ReferenceProfileSource } from './reference-profile'
 
 const CHROME_RE = /(^|_)(header|footer|nav|navbar|navigation)(_|$)/i
 
@@ -48,6 +49,7 @@ export function mapToBuildManifest(
   plan: DevelopmentPlan,
   blueprint: ScreenBlueprint,
   req: AnalyzeRequest,
+  reference?: ReferenceProfileSource,
 ): BuildManifest {
   // flow-order + title lookup by page_id (join plan ↔ blueprint on the stable page_id key)
   const planByPage = new Map(plan.pages.map((p) => [p.page_id, p]))
@@ -97,6 +99,7 @@ export function mapToBuildManifest(
     manifestId,
     sitemap,
     sharedComponents,
-    conformanceTokens: resolveHostProfile(req.conformanceProfile), // REVERSAL: host dominates, not ThemeConfig
+    // REVERSAL: the reference project's tokens dominate when supplied (else the embed-host default); never ThemeConfig.
+    conformanceTokens: resolveConformanceProfile(req.conformanceProfile, reference),
   }
 }
