@@ -13,15 +13,21 @@
  */
 import type { AnalyzeRequest, BuildManifest, PageArtifact, PageError } from '../contract'
 import { getEmitter } from '../emitters'
+import { routeToFile } from '../emitters/static-emitter'
 import { dynamicFinalRepair } from '../emitters/dynamic-final-repair'
 import { runGate } from '../conformance'
 import { runQualityAudit } from '../conformance/quality-audit'
+import { buildSiteCushions, notFoundSpec, defaultStructuralSeeds, type StructuralSeeds } from '../post-process'
+import { fixAccessibility } from '../post-process/a11y-fixer'
+import { seoInputForPage, injectSeoIntoHtml } from '../post-process/seo-injector'
 
 export interface GenerateOptions {
   request?: AnalyzeRequest
   pageIds?: string[]
   jobId?: string
   model?: string
+  /** ((B)⑤) structural-cushion seeds (baseUrl, locale, a11y labels, …). Defaults keep the pipeline working. */
+  seeds?: StructuralSeeds
 }
 
 export interface GenerateResult {
@@ -32,7 +38,20 @@ export interface GenerateResult {
 /** Deterministic BuildManifest → PageArtifact[] (static target). No LLM; Ollama enrichment is additive-deferred. */
 export async function generatePages(manifest: BuildManifest, opts: GenerateOptions = {}): Promise<GenerateResult> {
   const emitter = getEmitter('static')
-  const shared = [...(await emitter.emitShared(manifest))]
+  const seeds = opts.seeds ?? defaultStructuralSeeds
+  const renderShared = [...(await emitter.emitShared(manifest))] // styles.css + app.js (per-page render deps)
+  // ((B)⑤) SITE-LEVEL structural cushions built ONCE: sitemap.xml + robots.txt + a token-only 404.html. They
+  // ship in each self-contained page bundle + are gated, but are EXCLUDED from the per-page QUALITY audit — a
+  // 404/sitemap/robots is not page content, so its intentional thinness must not drag the page's quality score.
+  // COLLISION GUARD: if the manifest already routes a real page to 404.html, the authored page wins — the
+  // synthetic 404 is skipped (no duplicate/ambiguous bundle file) and 404.html is NOT audit-excluded (it is real).
+  const notFoundFile = routeToFile(notFoundSpec(seeds).route)
+  const hasReal404 = manifest.sitemap.some((p) => routeToFile(p.route) === notFoundFile)
+  const siteFiles = [
+    ...buildSiteCushions(manifest, seeds),
+    ...(hasReal404 ? [] : await emitter.emitPage(manifest, notFoundSpec(seeds))),
+  ]
+  const siteMetaPaths = new Set(siteFiles.map((f) => f.path)) // identity = files WE synthesize, not any '404.html'
   const targets = manifest.sitemap.filter((p) => !opts.pageIds || opts.pageIds.includes(p.pageId))
 
   const artifacts: PageArtifact[] = []
@@ -41,10 +60,20 @@ export async function generatePages(manifest: BuildManifest, opts: GenerateOptio
   for (const page of targets) {
     try {
       const pageFiles = [...(await emitter.emitPage(manifest, page))]
-      // repair over [shared + this page] — internal links resolve against the full manifest route map
-      const { files } = dynamicFinalRepair([...shared, ...pageFiles], manifest)
+      // ((B)⑤) a11y BEFORE repair (img-alt must precede dynamicFinalRepair's local-image stripping).
+      const { files: a11yed } = fixAccessibility(pageFiles, seeds.a11y)
+      // repair over [render deps + site files + this page] — the self-contained, gate-verified deployable unit
+      const { files: repaired } = dynamicFinalRepair([...renderShared, ...siteFiles, ...a11yed], manifest)
+      // SEO AFTER repair, on THIS page's own file only — so repair's internal-link normalization never sees the
+      // canonical/og <link> (a non-scheme baseUrl would otherwise be rewritten to href="#"), and no OTHER page's
+      // file gets this page's canonical.
+      const pagePath = routeToFile(page.route)
+      const seoInput = seoInputForPage(manifest, page, seeds)
+      const files = repaired.map((f) =>
+        f.path === pagePath ? { path: f.path, content: injectSeoIntoHtml(f.content, seoInput) } : f,
+      )
       const gates = await runGate(files)
-      const audit = runQualityAudit(files, manifest)
+      const audit = runQualityAudit(files.filter((f) => !siteMetaPaths.has(f.path)), manifest)
 
       artifacts.push({
         pageId: page.pageId,
