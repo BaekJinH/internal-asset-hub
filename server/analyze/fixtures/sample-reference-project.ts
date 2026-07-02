@@ -106,13 +106,70 @@ export function PricingCard({ plan, price, perks }: PricingCardProps) {
 }
 `
 
+/** Clean feature — category 'feature' (matched by '서비스/기능/특징' requirements keywords). */
+const featureGrid = `import React from 'react'
+
+export interface FeatureGridProps {
+  heading: string
+  items: string[]
+}
+
+export function FeatureGrid({ heading, items }: FeatureGridProps) {
+  return (
+    <section className="feature-grid md:grid-cols-3" aria-label="features">
+      <h2>{heading}</h2>
+      <ul>{items.map((i) => <li key={i}>{i}</li>)}</ul>
+    </section>
+  )
+}
+`
+
+/** Clean chrome — category 'navigation' (the selector prepends this as the page header). */
+const siteHeader = `import React from 'react'
+
+export interface SiteHeaderProps {
+  brand: string
+  links: string[]
+}
+
+export function SiteHeader({ brand, links }: SiteHeaderProps) {
+  return (
+    <header className="site-header md:flex" aria-label="site header">
+      <strong>{brand}</strong>
+      <nav aria-label="primary">{links.map((l) => <a key={l} href={l}>{l}</a>)}</nav>
+    </header>
+  )
+}
+`
+
+/** Clean chrome — category 'navigation' (the selector appends this as the page footer). */
+const siteFooter = `import React from 'react'
+
+export interface SiteFooterProps {
+  copyright: string
+  columns: string[]
+}
+
+export function SiteFooter({ copyright, columns }: SiteFooterProps) {
+  return (
+    <footer className="site-footer sm:grid" aria-label="site footer">
+      <small>{copyright}</small>
+      <ul>{columns.map((c) => <li key={c}>{c}</li>)}</ul>
+    </footer>
+  )
+}
+`
+
 /** Broken — no export, no React import, no *Props interface → 3 blocking errors → REJECTED. */
 const brokenWidget = `const BrokenWidget = () => <div style={{ color: 'red' }}>oops</div>
 `
 
 export const sampleReferenceComponents: ReferenceComponentSource[] = [
+  { filename: 'SiteHeader.tsx', content: siteHeader },
   { filename: 'HeroBanner.tsx', content: heroBanner },
-  { filename: 'ContactForm.tsx', content: contactForm },
+  { filename: 'FeatureGrid.tsx', content: featureGrid },
   { filename: 'PricingCard.tsx', content: pricingCard },
+  { filename: 'ContactForm.tsx', content: contactForm },
+  { filename: 'SiteFooter.tsx', content: siteFooter },
   { filename: 'BrokenWidget.tsx', content: brokenWidget },
 ]

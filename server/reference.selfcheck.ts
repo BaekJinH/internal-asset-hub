@@ -32,13 +32,21 @@ async function main() {
   const catalog = buildReferenceCatalog(sampleReferenceComponents)
   const hero = catalog.components['HeroBanner']
   const pricing = catalog.components['PricingCard']
-  const dirty = extractComponentMeta(sampleReferenceComponents[3]) // BrokenWidget
+  const dirty = extractComponentMeta(
+    sampleReferenceComponents.find((c) => c.filename === 'BrokenWidget.tsx')!,
+  )
 
   // ── 2. PROFILE ────────────────────────────────────────────────────────────────────────────────
   const cssVars = extractCssVars(sampleReferenceCss)
   const refProfile = extractProfileFromCss(sampleReferenceProfile, host)
   const noTokens = extractProfileFromCss({ profileId: 'empty', css: 'body { color: red; }' }, host)
   const anyLiteralInTokens = Object.values(cssVars).some((v) => /#|rgb\(|hsl\(/.test(v))
+
+  // regression teeth (adversarial-review findings): merge-completeness · :root scoping · semicolon tolerance
+  const partial = extractProfileFromCss({ profileId: 'partial', css: ':root { --primary: 10 20 30; }' }, host)
+  const darkScoped = extractCssVars(':root { --primary: 10 20 30; }\n.dark { --primary: 99 99 99; }')
+  const noSemi = extractCssVars(':root {\n  --primary: 10 20 30\n}')
+  const commented = extractCssVars(':root {\n  --primary: 10 20 30;\n}\n/* --primary: 99 99 99; */')
 
   // ── 3. PIPELINE ───────────────────────────────────────────────────────────────────────────────
   const req: AnalyzeRequest = {
@@ -62,7 +70,7 @@ async function main() {
 
   const checks: Record<string, boolean> = {
     // 1. catalog
-    'catalog: 3 valid components': Object.keys(catalog.components).length === 3,
+    'catalog: 6 valid components': Object.keys(catalog.components).length === 6,
     'catalog: 1 rejected (BrokenWidget)': catalog.rejected.length === 1 && catalog.rejected[0] === 'BrokenWidget',
     'catalog: hero category + props extracted': hero?.category === 'hero' &&
       hero.props.includes('title') && hero.props.includes('subtitle') && hero.props.includes('ctaLabel'),
@@ -88,6 +96,13 @@ async function main() {
     'profile: colorTokens derived from reference names': refProfile?.colorTokens.includes('primary') === true &&
       refProfile?.colorTokens.includes('accent') === true,
     'profile: no-channel css → null (fallback signal)': noTokens === null,
+    'merge: partial reference overrides declared, inherits host rest':
+      partial?.cssVars['--primary'] === '10 20 30' &&
+      partial?.cssVars['--card'] === host.cssVars['--card'] &&
+      partial?.cssVars['--border'] === host.cssVars['--border'],
+    'scope: .dark block cannot override :root token': darkScoped['--primary'] === '10 20 30',
+    'scope: commented-out declaration is ignored': commented['--primary'] === '10 20 30',
+    'terminator: final unterminated declaration is captured': noSemi['--primary'] === '10 20 30',
     'resolver: resolveConformanceProfile(ref) yields reference tokens':
       resolveConformanceProfile(req.conformanceProfile, sampleReferenceProfile).cssVars['--primary'] === REF_PRIMARY,
     'resolver: resolveConformanceProfile(no ref) yields host tokens':

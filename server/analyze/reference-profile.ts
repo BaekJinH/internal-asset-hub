@@ -41,10 +41,11 @@ export interface ReferenceProfileSource {
 }
 
 /**
- * Match ONLY sanctioned channel tokens: `--name: R G B;` where R/G/B are 0–255 decimals separated by spaces.
- * This is the reversal gate at the parser — hex / rgb()/hsl() literals cannot match and are silently excluded.
+ * Match ONLY sanctioned channel tokens: `--name: R G B` where R/G/B are 0–255 decimals separated by spaces,
+ * terminated by `;` OR end-of-block (CSS lets the final declaration omit its semicolon). This is the reversal
+ * gate at the parser — hex / rgb()/hsl() literals cannot match and are silently excluded.
  */
-const CHANNEL_TOKEN = /--([a-z0-9-]+)\s*:\s*(\d{1,3}\s+\d{1,3}\s+\d{1,3})\s*;/gi
+const CHANNEL_TOKEN = /--([a-z0-9-]+)\s*:\s*(\d{1,3}\s+\d{1,3}\s+\d{1,3})\s*(?:;|$)/gi
 
 /** true if the value is three 0–255 integers separated by whitespace (defensive re-validation). */
 function isChannelTriple(value: string): boolean {
@@ -52,10 +53,22 @@ function isChannelTriple(value: string): boolean {
   return parts.length === 3 && parts.every((p) => /^\d{1,3}$/.test(p) && Number(p) <= 255)
 }
 
-/** parse a reference CSS string → { '--token': 'R G B' } map, keeping only sanctioned channel tokens. */
+/**
+ * The FIRST `:root { ... }` block body (comments stripped). `:root` is the sanctioned source of tokens (mirrors
+ * the conformance gate, which exempts only the `:root` block). Scoping here means alternate-selector blocks
+ * (`.dark {}`, `@media (prefers-color-scheme: dark) {}`) and commented-out declarations CANNOT override the
+ * light-mode tokens — last-write-wins over the whole file would otherwise silently pick the wrong triples.
+ */
+function firstRootBody(css: string): string {
+  const noComments = css.replace(/\/\*[\s\S]*?\*\//g, '')
+  const m = noComments.match(/:root\s*\{([^}]*)\}/i)
+  return m ? m[1] : ''
+}
+
+/** parse a reference CSS string → { '--token': 'R G B' } map, keeping only sanctioned channel tokens in :root. */
 export function extractCssVars(css: string): Record<string, string> {
   const cssVars: Record<string, string> = {}
-  for (const m of css.matchAll(CHANNEL_TOKEN)) {
+  for (const m of firstRootBody(css).matchAll(CHANNEL_TOKEN)) {
     const name = `--${m[1].toLowerCase()}`
     const value = m[2].replace(/\s+/g, ' ').trim()
     if (isChannelTriple(value)) cssVars[name] = value
@@ -72,18 +85,25 @@ function deriveColorTokens(cssVars: Record<string, string>): string[] {
 
 /**
  * Build a reference ConformanceTokenSet: the reference's tokens are LAW for color; `base` (the host profile)
- * supplies structural governance (denylist / namingRules / fsdLanding) and any layer the reference omits.
+ * supplies structural governance (denylist / namingRules / fsdLanding) and any TOKEN the reference omits.
  * Returns null if the reference declares NO sanctioned channel tokens (caller falls back to `base`).
+ *
+ * MERGE PRECEDENCE (`{ ...base.cssVars, ...extracted }`): the reference OVERRIDES tokens it declares but
+ * INHERITS the rest from the host base — so the emitter-referenced token set is always complete (a partial
+ * reference that omits, say, --card/--border cannot leave `rgb(var(--card))` pointing at an undefined var,
+ * which would render broken while the gate — it strips :root — passes). Reversal is unaffected: base.cssVars
+ * are themselves sanctioned channel triples.
  */
 export function extractProfileFromCss(
   source: ReferenceProfileSource,
   base: ConformanceTokenSet,
 ): ConformanceTokenSet | null {
-  const cssVars = extractCssVars(source.css)
-  if (Object.keys(cssVars).length === 0) return null
+  const extracted = extractCssVars(source.css)
+  if (Object.keys(extracted).length === 0) return null
+  const cssVars = { ...base.cssVars, ...extracted }
 
   return {
-    // COLOR/TOKEN layer — reference dominates:
+    // COLOR/TOKEN layer — reference dominates for declared tokens, inherits the rest from the host base:
     cssVars,
     colorTokens: deriveColorTokens(cssVars),
     colorBearingPrefixes: source.colorBearingPrefixes ?? base.colorBearingPrefixes,

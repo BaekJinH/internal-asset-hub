@@ -46,6 +46,12 @@ export interface ReferenceComponentMeta {
   hasResponsive: boolean
   hasAria: boolean
   conformance: ReferenceConformance
+  /**
+   * Domains this component suits (devpilot ComponentMeta.recommendedDomains). The increment-① regex extractor
+   * cannot infer this, so it is left undefined here; a richer reference metadata source (later) populates it,
+   * and component-selector uses it for domain-aware selection when present (else it degrades to first-in-category).
+   */
+  recommendedDomains?: string[]
 }
 
 /** The cushion catalog: forward-compatible with devpilot ComponentManifest (categories index + components map). */
@@ -135,7 +141,13 @@ export function guessCategory(filename: string, content: string, rules: Extracti
   return rules.fallbackCategory
 }
 
-/** extract prop names from the first `interface *Props { ... }` block (devpilot extractProps, verbatim regex). */
+/**
+ * Extract prop names from the first `interface *Props { ... }` block (devpilot extractProps, VERBATIM regex).
+ * KNOWN LIMITATION (inherited from the source, kept faithful): the block regex `[^}]*` stops at the first `}`,
+ * so a nested object-typed member (`theme: { color: string }`) truncates the block — its inner member leaks in
+ * as a top-level name and members after it are lost. Impact is metadata-only (prop TYPES are already 'unknown'
+ * and no emitter consumes props today); richer AST-based prop-shape extraction is a later increment.
+ */
 export function extractProps(content: string): string[] {
   const block = content.match(PROPS_BLOCK)
   if (!block) return []

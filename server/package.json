@@ -13,6 +13,7 @@
     "analyze:self": "tsx analyze.selfcheck.ts",
     "transport:self": "tsx transport.selfcheck.ts",
     "reference:self": "tsx reference.selfcheck.ts",
+    "selection:self": "tsx selection.selfcheck.ts",
     "dev": "tsx watch transport/index.ts"
   },
   "dependencies": {
