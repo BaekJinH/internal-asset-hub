@@ -9,7 +9,7 @@
 ## 0. 실측 좌표 (STATE-SYNC 2026-07-03)
 - **repo:** `D:\tinto-gui\internal-asset-hub` @ `integrate-core-gui` (origin=`BaekJinH/internal-asset-hub`; `old-origin`=삭제된 org repo — 제거 권고).
 - **host base SHA:** `46c5fff` (conformanceProfile pin). **Pass-1:** `90a6169`(+`726a1a7` naming) — host devpilot 표면 완료·frozen.
-- **엔진 HEAD:** `43abdbf` (B)⑤ 구조적 쿠션. **엔진 = co-located `server/`** (별도 repo 아님 — Rev 1.2 오류 정정). `devpilot-v2@d262aa3`(`D:\vibeCoding-project`) = read-only 포팅 소스.
+- **엔진 HEAD:** `08e1ff1` emitter/repair escape 하드닝(§15-1 CLOSED). (`ab31e2f` Rev1.4 fold-in ← `43abdbf` (B)⑤). **엔진 = co-located `server/`** (별도 repo 아님 — Rev 1.2 오류 정정). `devpilot-v2@d262aa3`(`D:\vibeCoding-project`) = read-only 포팅 소스.
 - **★ 트랙 상태:** (B) **결정적 표면 완전 폐쇄**. 잔여 = 사실상 (A) 외부 관문(Gemini 키 + Ollama 서버) — 코드 아닌 provisioning. §12~§16 참조.
 
 ## 1. OBJECTIVE / ARCHITECTURE
@@ -56,7 +56,7 @@ Phase-1 `@google/generative-ai ^0.21` · Phase-2 Ollama 클라이언트(`ollama`
 ① 루트 `../CLAUDE.md` 경로펜스 라우터 + `server/CLAUDE.md`(엔진) ② Skills: conformance-governance·multipage-orchestration ③ Agents(Writer≠Reviewer): manifest-architect·page-generator·conformance-validator ④ Hooks(PostToolUse color-token·PreToolUse deny-list·Stop harness-gate)·docs/failures ⑤ MCP(job·corpus·conformance) ⑥ 본 문서 ⑦ Memory.
 
 ## 11. BUILD SEQUENCE / 진행
-STEP 0 STATE-SYNC ✅ · 0.5 PHASE-MAP ✅ · 1 스캐폴딩 ✅ · **3 첫 슬라이스 ✅**(fixture→emit→gate PASS) · 2 하네스 ✅(audit 10.0) · **3-cont ✅(결정적 완결):** static emitter fidelity → Dynamic Final Repair → quality audit(S19) → analyze(phase_0-3, cloud deferred) → HTTP transport → **(B) 레퍼런스→순응 사슬 ①~⑤ + registry**(§12) → **구조적 쿠션**(§13). **잔여 = (A) 외부 관문**(§16) + FT corpus + resume executor.
+STEP 0 STATE-SYNC ✅ · 0.5 PHASE-MAP ✅ · 1 스캐폴딩 ✅ · **3 첫 슬라이스 ✅**(fixture→emit→gate PASS) · 2 하네스 ✅(audit 10.0) · **3-cont ✅(결정적 완결):** static emitter fidelity → Dynamic Final Repair → quality audit(S19) → analyze(phase_0-3, cloud deferred) → HTTP transport → **(B) 레퍼런스→순응 사슬 ①~⑤ + registry**(§12) → **구조적 쿠션**(§13) → **emitter/repair escape 하드닝**(§15-1, 커밋 `08e1ff1`; 마지막 알려진 인젝션/게이트-오탐 갭 봉쇄) → **serve.ts 엔진 HTTP bootstrap**(createEngineServer listen). **잔여 = (A) 외부 관문**(§16) + FT corpus + resume executor.
 
 ---
 
@@ -122,15 +122,18 @@ STEP 0 STATE-SYNC ✅ · 0.5 PHASE-MAP ✅ · 1 스캐폴딩 ✅ · **3 첫 슬�
 | `loader:self` | 20 | fs 발견 + zod fail-closed + symlink 펜스 |
 | `registry:self` | 22 | resolve/assertion/one-flip/transport |
 | `cushion:self` | **28** | a11y/seo/sitemap dirty-HTML + 하드닝 10 tooth |
-| **합계(named)** | **≈181 + gate** | 결정적 회귀 방어망 |
+| `emit-escape:self` | **18** | §15-1 escape: injection/gate-trip/faithfulness + 적대리뷰 F1~F5·G1/G2 회귀 |
+| **합계(named)** | **≈199 + gate** | 결정적 회귀 방어망 |
 
 > **정정(verify-first):** 이전 세션 회상은 "reference 24→34, cushion 26"이었으나 **실측 = reference 36, cushion 28.** 정본은 실측치 채택.
 
 ## 15. 잔여 문서화-수용 + deferred 하드닝
-1. **★ emitter unescaped title escape (post-(A) 하드닝 — Architect flagged):** static-emitter가 `page.title`/section을 **unescaped 보간**(`<title>${page.title}</title>` L86 · nav `${p.title}` L65 · `<h2>${s}</h2>` L74 · footer L102). `#hex`꼴/`<script>`꼴 타이틀은 게이트 트립/인젝션 가능. **⑤ 밖**(쿠션은 자기 방출 텍스트만 방어)이나, **(A) 이후 실 콘텐츠(LLM 생성 타이틀)가 붙으면 실제로 물릴 수 있음** → emitter escape 보강 항목으로 기록. **다음 트랙 후보.**
+1. **✅ emitter/repair escape 하드닝 = CLOSED (커밋 `08e1ff1`, §15-1).** static-emitter가 `page.title`/section/nav/id/manifestId를 unescaped 보간하던 갭을 봉쇄: `esc()`(HTML-escape `&<>"'` + `#hex`/`rgb()/hsl()` 중립화)를 free-text 보간 6곳 전부에 적용; `routeToFile()`이 segment를 URL/filename-safe 슬러그로 정화(스킴 콜론·따옴표 strip → nav href escape 불필요·repair alias map 동기·`javascript:` 스킴 차단); repair `escAttr`/`#fragment`/external-URL 브랜치 color-neutralize; `notFoundSpec` 중복 pre-neutralize 제거(double-encode 해소); SEO canonical + sitemap `<loc>`가 pathological `rgb(` route 중립화. **적대적 리뷰(3 렌즈, per-finding refute-verify) 5 confirmed 전부 tooth로 수정**(F1 404 double-encode·F4 `javascript:` XSS·F5 href-alias desync·F2 img-alt·F3 #fragment) + **focused 재리뷰 G1/G2**(repair verbatim 브랜치·SEO/sitemap URL) 닫음. `emit-escape:self` 18 tooth.
+   - **잔여 defer(게이트-레이어 concern, 정직 기록):** repair의 **external-`<img>` 태그**는 verbatim 보존되어 alt/style의 hex가 남을 수 있음 — 여기서 중립화하면 inline `style`의 **진짜** color 위반을 masking하므로(over-escape가 실 위반 은폐) sink가 아닌 **게이트-레이어 context 구분** 문제. 동류로 ecommerce 카테고리 JSON-LD의 `rgb(`꼴 raw-route(극단적 pathological). 둘 다 정상 slug 파이프라인 미도달(routes=slugified), 방어는 게이트 refinement 또는 (A) 이후 enrichment 하드닝으로.
 2. **loader realpath 펜스 (④에서 하드닝, live 검증 대기):** `confinedPath`가 lexical-only였던 것을 realpath 재-assertion으로 봉쇄(②의 펜스 갭). **production bootstrap이 references-root를 populate할 때 실 배포 환경(OS symlink 차이)에서 live 검증 필요.**
 3. **ftRecord.meta.timestamp = wall-clock** (provenance 의도; `files`는 결정적이라 게이트/배포 무영향). 수용.
 4. **404 route serving = host rewrite 설정** (배포 관심사; 404.html 방출은 결정적). 수용.
+5. **routeToFile charset `[A-Za-z0-9._-]` ⊃ 게이트 KEBAB `[a-z0-9-]`** (pre-existing): 대문자/`_`/`.` route는 filename이 namingViolations 트립 — 게이트가 non-kebab route를 올바르게 거부하는 것(intended). 수용.
 
 ## 16. 잔여 = (A) 외부 관문 (코드 아닌 provisioning)
 | 관문 | 상태 | 열리는 순간 |
