@@ -9,7 +9,7 @@
 ## 0. 실측 좌표 (STATE-SYNC 2026-07-03)
 - **repo:** `D:\tinto-gui\internal-asset-hub` @ `integrate-core-gui` (origin=`BaekJinH/internal-asset-hub`; `old-origin`=삭제된 org repo — 제거 권고).
 - **host base SHA:** `46c5fff` (conformanceProfile pin). **Pass-1:** `90a6169`(+`726a1a7` naming) — host devpilot 표면 완료·frozen.
-- **엔진 HEAD:** `c3868bd` 관측·제어 골격 (OBS)①(§17). (`08e1ff1` escape 하드닝 §15-1 ← `ab31e2f` Rev1.4 fold-in ← `43abdbf` (B)⑤). **엔진 = co-located `server/`** (별도 repo 아님). `devpilot-v2@d262aa3`(`D:\vibeCoding-project`) = read-only 포팅 소스.
+- **엔진 HEAD:** `d513bac` 관측 대시보드 (OBS)②(§17.2b). (`c3868bd` (OBS)① ← `08e1ff1` escape §15-1 ← `ab31e2f` fold-in ← `43abdbf` (B)⑤). **엔진 = co-located `server/`** (별도 repo 아님). `devpilot-v2@d262aa3`(`D:\vibeCoding-project`) = read-only 포팅 소스.
 - **엔진 서빙 MVP 확정(2026-07-03):** 엔진 관측 UI는 `:8787` 별도 URL로 서빙, **`src/` 불변·경로펜스 무전환**. 검증 후 host `/devpilot` 임베드는 팀 조율 후. → 팀 코드베이스 조율 없이 결정적으로 진행 가능.
 - **★ 트랙 상태:** (B) **결정적 표면 완전 폐쇄**. 잔여 = 사실상 (A) 외부 관문(Gemini 키 + Ollama 서버) — 코드 아닌 provisioning. §12~§16 참조.
 
@@ -125,7 +125,8 @@ STEP 0 STATE-SYNC ✅ · 0.5 PHASE-MAP ✅ · 1 스캐폴딩 ✅ · **3 첫 슬�
 | `cushion:self` | **28** | a11y/seo/sitemap dirty-HTML + 하드닝 10 tooth |
 | `emit-escape:self` | **18** | §15-1 escape: injection/gate-trip/faithfulness + 적대리뷰 F1~F5·G1/G2 회귀 |
 | `observability:self` | **32** | (OBS)① registry·resolution·structure·거짓-관측(R-6)·빈run·HTTP + 적대리뷰 회귀 |
-| **합계(named)** | **≈231 + gate** | 결정적 회귀 방어망 |
+| `observability-ui:self` | **10** | (OBS)② SSR integration 정직·드롭다운·리포트 데이터·구조패널 cross-ref·HTTP |
+| **합계(named)** | **≈241 + gate** | 결정적 회귀 방어망 |
 
 > **정정(verify-first):** 이전 세션 회상은 "reference 24→34, cushion 26"이었으나 **실측 = reference 36, cushion 28.** 정본은 실측치 채택.
 
@@ -154,7 +155,7 @@ STEP 0 STATE-SYNC ✅ · 0.5 PHASE-MAP ✅ · 1 스캐폴딩 ✅ · **3 첫 슬�
 
 ### 17.1 트랙 시퀀스 (각 별도 Gate)
 - **① 관측·제어 엔진 골격 (지금·결정적) — AS-BUILT ✅ (커밋 `c3868bd`):** §17.2.
-- **② 관측 UI (serve.ts가 대시보드 정적 서빙):** 구조도 패널 + 스테이지별 상태/모델/생성물(StageEvent 렌더) + 모델 선택 드롭다운(`GET /models`→override→POST). 리포트(저장 events) 먼저, SSE 라이브 스트리밍 스캐폴딩은 (A) 짝. **src/ 불변.**
+- **② 관측 UI (엔진이 `:8787/dashboard` 서빙) — AS-BUILT ✅ (커밋 `d513bac`):** §17.2b.
 - **③ (A) 짝 — 라이브 활성화:** SSE 실스트리밍 + 워커모델 실호출(Gemini/Ollama) + 실 cost/duration. Gemini 키 + Ollama 서버 열릴 때. **★ 이때 `INTEGRATED_WORKERS`에 해당 워커 추가(1곳) = 코드경로 wired 선언 → resolveWorker가 실제 실행 워커를 기록.**
 
 ### 17.2 increment-① AS-BUILT (관측·제어 엔진 골격)
@@ -170,6 +171,12 @@ STEP 0 STATE-SYNC ✅ · 0.5 PHASE-MAP ✅ · 1 스캐폴딩 ✅ · **3 첫 슬�
 **★ CTO 거짓-관측 방지(핵심):** 적대적 리뷰가 **바로 그 R-6 갭**을 잡음 — `isWorkerAvailable`이 env 존재만 봐서, OLLAMA_BASE_URL 세팅(임박) + override `qwen3-coder:30b` 시 event/ftRecord가 `qwen3-coder:30b`를 기록하는데 실제론 static emitter가 바이트 생성(Ollama 코드경로 미존재). → **`INTEGRATED_WORKERS` 도입으로 봉쇄**: 코드경로 wired가 아니면 override해도 결정적 fallback, 기록 model = **실 바이트생산자**(requested는 별도 surface). `observability:self`에 R-6 closure tooth(override qwen+env→deterministic 기록) 3개 + prototype-pollution(→400) 2개.
 
 **적대적 리뷰:** 3 렌즈 per-finding refute-verify → **4 confirmed 전부 tooth**(MAJOR×2 R-6 availability≠integration · MAJOR prototype-pollution fail-closed 우회 · NIT stray) + **3 refuted 정확 기각**(unified-override 관용·analyze-default latent·partial-failure는 guard가 잡으면 오히려 오작동). `observability:self` **32 tooth**. 전 12-스위트 green.
+
+### 17.2b increment-② AS-BUILT (관측 UI · 엔진 서빙 `:8787/dashboard`)
+**엔진이 자기 관측 UI를 서빙** — `src/` 불변(host SPA 아님, 경로펜스 무전환). self-contained HTML(no build/framework), transport `GET /dashboard`. serve.ts가 demo manifest(`demo`) 시드 → 즉시 실행 가능.
+- **4 패널 SSR**(정직성-핵심 비트는 서버렌더라 testable): ① 구조도(13 stages) · ② §11 워커 레지스트리 · ③ 실행/제어(per-stage 워커 드롭다운→`POST /generate` stageModelOverrides) · ④ 실행 리포트(`GET /runs/:id/events` StageEvent 렌더).
+- **★ UI 층 정직성(CTO 요구 — 엔진 층 R-6를 UI가 재배신 안 하게):** 미통합 워커를 배지·드롭다운·**구조 패널 default까지** "미통합·deterministic fallback"로 명시(`GET /models`의 `integrated` 플래그). 실행 리포트는 **ACTUAL 워커** 표시 + 요청≠실행 시 "요청:" 배지 + warn-bar. **SSE 라이브 = (A) 짝으로 정직히 defer**(거짓 "live" 쿠션 안 만듦).
+- **적대적 리뷰(3 렌즈):** 2 findings **0 confirmed**(둘 다 refuted — UI 거짓-관측·injection·회귀 없음). refuted된 near-miss 2건(구조 패널 integration cross-ref·warn-bar dedup)은 정직성 강화로 선제 적용. **라이브 검증:** `/dashboard` 200(미통합 배지 렌더), demo 실행→emitPage report `actual=deterministic requested=qwen`(요청≠실행 정직 surface). `observability-ui:self` **10 tooth**.
 
 ### 17.3 잔여 defer (관측)
 - **analyze.* 스테이지는 /generate run에서 미방출**(정직한 부재 — override는 unified vocabulary라 수용되나 no-op). analyze 이벤트는 (A)에서 analyze 라이브 시 방출.
