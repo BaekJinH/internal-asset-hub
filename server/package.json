@@ -7,6 +7,7 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "slice": "tsx slice.ts",
+    "serve": "tsx serve.ts",
     "gate:self": "tsx gate.selfcheck.ts",
     "repair:self": "tsx repair.selfcheck.ts",
     "quality:self": "tsx quality.selfcheck.ts",
@@ -17,6 +18,7 @@
     "loader:self": "tsx reference-loader.selfcheck.ts",
     "registry:self": "tsx registry.selfcheck.ts",
     "cushion:self": "tsx cushion.selfcheck.ts",
+    "emit-escape:self": "tsx emit-escape.selfcheck.ts",
     "dev": "tsx watch transport/index.ts"
   },
   "dependencies": {

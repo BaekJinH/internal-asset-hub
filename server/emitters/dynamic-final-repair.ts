@@ -25,13 +25,26 @@ function routesFromManifest(manifest: BuildManifest): Route[] {
   }))
 }
 
+/** Neutralize color literals (#hex, rgb()/hsl() with a numeric arg) so decorative copy — an <img> alt, an
+ *  unresolved route, a URL '#fragment' — carrying a hex-shaped token cannot FALSE-TRIP the conformance gate's
+ *  raw-color scan. Parity with the emitter's esc(); MUST run AFTER any '&'-escape so the '&' it introduces is
+ *  final. A browser decodes the entity back, so the link/label is unchanged; only the raw byte stream is made
+ *  gate-safe. */
+function neutColor(s: string): string {
+  return String(s ?? '')
+    .replace(/#(?=[0-9a-fA-F]{3,8}\b)/g, '&#35;')
+    .replace(/\b(rgb|rgba|hsl|hsla)\((?=\s*[0-9.])/gi, '$1&#40;')
+}
+
 function escAttr(s: string): string {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
+  return neutColor(
+    String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;'),
+  )
 }
 
 /** S20: alias(link) → canonical html file. (소스 알고리즘 그대로) */
@@ -77,13 +90,18 @@ export function normalizeInternalLinks(html: string, routes: Route[]): string {
   const aliases = buildRouteAliasMap(routes)
   return String(html || '').replace(/\bhref=(["'])([^"']*)\1/gi, (match, quote: string, raw: string) => {
     const value = String(raw || '').trim()
-    if (!value || /^(https?:|mailto:|tel:|#|javascript:|data:|blob:)/i.test(value)) return match
+    // external/scheme/pure-fragment hrefs are preserved verbatim — but a hex-shaped token in the URL (a '#ff0000'
+    // fragment or a '…#ff0000' external URL) is not a color, so color-neutralize it to avoid a gate false-trip.
+    // (Neutralizing a URL never masks a real color declaration — an href is never a CSS color context.)
+    if (!value || /^(https?:|mailto:|tel:|#|javascript:|data:|blob:)/i.test(value)) return neutColor(match)
     const suffixMatch = value.match(/([?#].*)$/)
     const suffix = suffixMatch ? suffixMatch[1] : ''
     const base = value.replace(/([?#].*)$/, '').replace(/^\.\//, '')
     const lookup = base.replace(/^\/+/, '').replace(/\/$/, '').toLowerCase()
     const mapped = aliases.get(lookup) || aliases.get(lookup.replace(/\.html?$/i, ''))
-    if (mapped) return `href=${quote}${mapped}${suffix}${quote}`
+    // the '#fragment'/'?query' suffix is preserved verbatim for navigation, but a hex-shaped fragment (e.g.
+    // '#ff0000') must be color-neutralized so it does not trip the gate on an otherwise-conformant page.
+    if (mapped) return `href=${quote}${mapped}${neutColor(suffix)}${quote}`
     if (/^\//.test(base) || /\.html?$/i.test(base) || /^[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*$/.test(base))
       return `href=${quote}#${quote} data-unresolved-route="${escAttr(value)}"`
     return match

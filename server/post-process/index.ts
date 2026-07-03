@@ -18,7 +18,6 @@
  *   that actually serves 404.html is a host/static-hosting rewrite concern — out of ⑤ scope.)
  */
 import type { BuildManifest, GeneratedFile, PageSpec } from '../contract'
-import { neutralizeColorLiteralsHtml } from './neutralize'
 import type { A11ySeeds } from './a11y-fixer'
 import type { PageCategory, SeoSeeds } from './seo-injector'
 import { generateSitemap, generateRobotsTxt, type SitemapPage } from './sitemap'
@@ -53,13 +52,15 @@ export const defaultStructuralSeeds: StructuralSeeds = {
 }
 
 /** The synthetic PageSpec for the static 404 page (route '/404' → 404.html via routeToFile). The seed copy is
- *  neutralized so a hex-shaped token in the 404 title/body (e.g. 'Error #404') cannot trip the site-wide gate. */
+ *  passed RAW: the static emitter's esc() now HTML-escapes AND neutralizes color literals at interpolation time,
+ *  so pre-neutralizing here would DOUBLE-ENCODE it (e.g. 'Error #404' → '&amp;#35;404', which renders the entity
+ *  literally). esc() alone keeps a hex-shaped 404 title/body both gate-safe and correctly rendered. */
 export function notFoundSpec(seeds: StructuralSeeds): PageSpec {
   return {
     pageId: 'not_found',
     route: '/404',
-    title: neutralizeColorLiteralsHtml(seeds.notFound.title),
-    sections: [neutralizeColorLiteralsHtml(seeds.notFound.body)],
+    title: seeds.notFound.title,
+    sections: [seeds.notFound.body],
     dependsOn: [],
   }
 }

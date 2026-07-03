@@ -41,6 +41,13 @@ function xmlEscape(s: string): string {
     .replace(/'/g, '&apos;')
 }
 
+/** Color-neutralize a <loc> URL (AFTER xmlEscape) so a pathological 'rgb('/'hsl('-shaped route segment cannot
+ *  trip the gate's raw-color scan of the site-wide sitemap.xml. A URL is never a CSS color context, so this
+ *  never masks a real violation; '#hex' fragments are already stripped before the URL is built. */
+function neutColorUrl(s: string): string {
+  return s.replace(/\b(rgb|rgba|hsl|hsla)\((?=\s*[0-9.])/gi, '$1&#40;')
+}
+
 /** Build sitemap.xml from routes. `lastmod` (YYYY-MM-DD) is injected for determinism; omitted → no <lastmod>. */
 export function generateSitemap(pages: SitemapPage[], baseUrl: string, lastmod?: string): string {
   const o = origin(baseUrl)
@@ -52,7 +59,7 @@ export function generateSitemap(pages: SitemapPage[], baseUrl: string, lastmod?:
       // fragment out of the gate-scanned, site-wide sitemap.xml).
       const clean = p.path.split('#')[0].split('?')[0]
       const path = clean.startsWith('/') ? clean : '/' + clean
-      const loc = xmlEscape(o + path)
+      const loc = neutColorUrl(xmlEscape(o + path))
       const lm = lastmod ? `\n    <lastmod>${xmlEscape(lastmod)}</lastmod>` : ''
       return `  <url>\n    <loc>${loc}</loc>${lm}\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority.toFixed(1)}</priority>\n  </url>`
     })

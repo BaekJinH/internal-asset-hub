@@ -104,7 +104,9 @@ function safeText(s: string): string {
 export function generateSeoTags(input: SeoInput): string {
   const title = safeText(input.pageTitle)
   const description = safeText(input.pageDescription)
-  const url = escapeHtml(input.pageUrl) // a canonical URL carries no '#fragment' (stripped in pageUrl)
+  const url = safeText(input.pageUrl) // canonical/og URL: '#fragment' is stripped in pageUrl; safeText also
+  // color-neutralizes a pathological 'rgb('/'hsl('-shaped route segment so it cannot trip the gate (a URL is
+  // never a CSS color context, so this never masks a real violation)
   const ogImage = safeText(input.ogImageUrl) // a deployer-supplied og image may carry a '#hex'-shaped token
   const keywords = safeText(input.keywords.join(', '))
   const ogType = input.pageCategory === 'ecommerce' ? 'product' : 'website'
