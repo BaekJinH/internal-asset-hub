@@ -9,7 +9,8 @@
 ## 0. 실측 좌표 (STATE-SYNC 2026-07-03)
 - **repo:** `D:\tinto-gui\internal-asset-hub` @ `integrate-core-gui` (origin=`BaekJinH/internal-asset-hub`; `old-origin`=삭제된 org repo — 제거 권고).
 - **host base SHA:** `46c5fff` (conformanceProfile pin). **Pass-1:** `90a6169`(+`726a1a7` naming) — host devpilot 표면 완료·frozen.
-- **엔진 HEAD:** `08e1ff1` emitter/repair escape 하드닝(§15-1 CLOSED). (`ab31e2f` Rev1.4 fold-in ← `43abdbf` (B)⑤). **엔진 = co-located `server/`** (별도 repo 아님 — Rev 1.2 오류 정정). `devpilot-v2@d262aa3`(`D:\vibeCoding-project`) = read-only 포팅 소스.
+- **엔진 HEAD:** `c3868bd` 관측·제어 골격 (OBS)①(§17). (`08e1ff1` escape 하드닝 §15-1 ← `ab31e2f` Rev1.4 fold-in ← `43abdbf` (B)⑤). **엔진 = co-located `server/`** (별도 repo 아님). `devpilot-v2@d262aa3`(`D:\vibeCoding-project`) = read-only 포팅 소스.
+- **엔진 서빙 MVP 확정(2026-07-03):** 엔진 관측 UI는 `:8787` 별도 URL로 서빙, **`src/` 불변·경로펜스 무전환**. 검증 후 host `/devpilot` 임베드는 팀 조율 후. → 팀 코드베이스 조율 없이 결정적으로 진행 가능.
 - **★ 트랙 상태:** (B) **결정적 표면 완전 폐쇄**. 잔여 = 사실상 (A) 외부 관문(Gemini 키 + Ollama 서버) — 코드 아닌 provisioning. §12~§16 참조.
 
 ## 1. OBJECTIVE / ARCHITECTURE
@@ -56,7 +57,7 @@ Phase-1 `@google/generative-ai ^0.21` · Phase-2 Ollama 클라이언트(`ollama`
 ① 루트 `../CLAUDE.md` 경로펜스 라우터 + `server/CLAUDE.md`(엔진) ② Skills: conformance-governance·multipage-orchestration ③ Agents(Writer≠Reviewer): manifest-architect·page-generator·conformance-validator ④ Hooks(PostToolUse color-token·PreToolUse deny-list·Stop harness-gate)·docs/failures ⑤ MCP(job·corpus·conformance) ⑥ 본 문서 ⑦ Memory.
 
 ## 11. BUILD SEQUENCE / 진행
-STEP 0 STATE-SYNC ✅ · 0.5 PHASE-MAP ✅ · 1 스캐폴딩 ✅ · **3 첫 슬라이스 ✅**(fixture→emit→gate PASS) · 2 하네스 ✅(audit 10.0) · **3-cont ✅(결정적 완결):** static emitter fidelity → Dynamic Final Repair → quality audit(S19) → analyze(phase_0-3, cloud deferred) → HTTP transport → **(B) 레퍼런스→순응 사슬 ①~⑤ + registry**(§12) → **구조적 쿠션**(§13) → **emitter/repair escape 하드닝**(§15-1, 커밋 `08e1ff1`; 마지막 알려진 인젝션/게이트-오탐 갭 봉쇄) → **serve.ts 엔진 HTTP bootstrap**(createEngineServer listen). **잔여 = (A) 외부 관문**(§16) + FT corpus + resume executor.
+STEP 0 STATE-SYNC ✅ · 0.5 PHASE-MAP ✅ · 1 스캐폴딩 ✅ · **3 첫 슬라이스 ✅**(fixture→emit→gate PASS) · 2 하네스 ✅(audit 10.0) · **3-cont ✅(결정적 완결):** static emitter fidelity → Dynamic Final Repair → quality audit(S19) → analyze(phase_0-3, cloud deferred) → HTTP transport → **(B) 레퍼런스→순응 사슬 ①~⑤ + registry**(§12) → **구조적 쿠션**(§13) → **emitter/repair escape 하드닝**(§15-1, 커밋 `08e1ff1`) → **serve.ts 엔진 HTTP bootstrap** → **관측·제어 골격 (OBS)①**(§17, 커밋 `c3868bd`; 워커 레지스트리 §11 단일화 + StageEvent + 거짓-관측 guard). **잔여 = (A) 외부 관문**(§16) + 관측 ②UI/③라이브(§17.1) + FT corpus + resume executor.
 
 ---
 
@@ -123,7 +124,8 @@ STEP 0 STATE-SYNC ✅ · 0.5 PHASE-MAP ✅ · 1 스캐폴딩 ✅ · **3 첫 슬�
 | `registry:self` | 22 | resolve/assertion/one-flip/transport |
 | `cushion:self` | **28** | a11y/seo/sitemap dirty-HTML + 하드닝 10 tooth |
 | `emit-escape:self` | **18** | §15-1 escape: injection/gate-trip/faithfulness + 적대리뷰 F1~F5·G1/G2 회귀 |
-| **합계(named)** | **≈199 + gate** | 결정적 회귀 방어망 |
+| `observability:self` | **32** | (OBS)① registry·resolution·structure·거짓-관측(R-6)·빈run·HTTP + 적대리뷰 회귀 |
+| **합계(named)** | **≈231 + gate** | 결정적 회귀 방어망 |
 
 > **정정(verify-first):** 이전 세션 회상은 "reference 24→34, cushion 26"이었으나 **실측 = reference 36, cushion 28.** 정본은 실측치 채택.
 
@@ -142,3 +144,34 @@ STEP 0 STATE-SYNC ✅ · 0.5 PHASE-MAP ✅ · 1 스캐폴딩 ✅ · **3 첫 슬�
 | **회사 Ollama 서버** | 엔진에서 네트워크 도달 확인 대기(엔드포인트·방화벽) | 페이지 **본문 보강**(qwen3-coder:30b) → "레퍼런스+기획안 → 실 콘텐츠 페이지" e2e 완성. |
 
 > **소진 신호:** ⑤로 결정적으로 남는 큰 건이 사실상 소진. 남은 두 갈래 = (A) 외부 관문(진혁님 provisioning) + 잔여 하드닝(§15, 특히 emitter escape). one-flip 라이브 검증 시 11개 사전 백신(analyze/transport 계열) 방어 하에 e2e.
+
+---
+
+# OBSERVABILITY & CONTROL 트랙 (2026-07-03~) — 관측·제어 레이어
+
+## 17. OBSERVABILITY LAYER (엔진 서빙 MVP, `:8787` 별도 URL, `src/` 불변)
+**목적:** 파이프라인을 구조도로 보고, 스테이지별 상태/모델/생성물을 관측하고, 스테이지별 워커모델을 제어. **엔진이 자기 관측 UI를 `:8787`로 서빙**(host `/devpilot` 임베드는 검증 후 팀 조율 — 경로펜스 무전환).
+
+### 17.1 트랙 시퀀스 (각 별도 Gate)
+- **① 관측·제어 엔진 골격 (지금·결정적) — AS-BUILT ✅ (커밋 `c3868bd`):** §17.2.
+- **② 관측 UI (serve.ts가 대시보드 정적 서빙):** 구조도 패널 + 스테이지별 상태/모델/생성물(StageEvent 렌더) + 모델 선택 드롭다운(`GET /models`→override→POST). 리포트(저장 events) 먼저, SSE 라이브 스트리밍 스캐폴딩은 (A) 짝. **src/ 불변.**
+- **③ (A) 짝 — 라이브 활성화:** SSE 실스트리밍 + 워커모델 실호출(Gemini/Ollama) + 실 cost/duration. Gemini 키 + Ollama 서버 열릴 때. **★ 이때 `INTEGRATED_WORKERS`에 해당 워커 추가(1곳) = 코드경로 wired 선언 → resolveWorker가 실제 실행 워커를 기록.**
+
+### 17.2 increment-① AS-BUILT (관측·제어 엔진 골격)
+**★ StageEvent 위치 = server DTO** (frozen `devpilot-types.ts` 미변경, MVP 락 준수; `:8787` 엔진-내부라 host 미소비). shipped shape 재사용(FTRecord.meta·PageError·Gate/Quality/Repair/A11yReport = detail) — 병렬 vocabulary 안 만듦.
+
+| 산출 (`server/observability/`) | 무엇 |
+|---|---|
+| **worker-registry.ts** | **§11 단일 SoT** — 5 워커 카탈로그(`static-emitter@deterministic`·`gemini-3.5-flash`·`qwen3-coder:30b`·`qwen3:32b`·`deepseek-r1:32b`) + 13 스테이지 바인딩 `{tier,kind,availableModels,default,produces,order}`. import-time integrity assert. `stageModelOverridesSchema`(zod, **`Object.hasOwn` fail-closed**). **★ `INTEGRATED_WORKERS`**(코드경로 실존 워커) — resolveWorker는 **integrated AND available**일 때만 `actual=requested`, 아니면 결정적 fallback. |
+| **stage-events.ts** | `StageEvent` DTO + `StageEmitter`(결정적 seq) + **`verifyRunObservability`**(거짓-관측 guard, devpilot `verifyActualVsIntended` 포팅: 산출물 미기록/phantom artifact 잡음). |
+| **transport 엔드포인트** | `GET /pipeline/structure`(구조도) · `GET /models`(레지스트리+availability+integration) · `GET /runs/:id/events`(리포트) · `POST /generate` + `stageModelOverrides`(fail-closed). |
+| **generate/jobs 배선** | 전 스테이지 방출(결정적 포함, 즉시 done이나 관측 가능); **artifacts=실제 출력 파생**(하드코딩 금지); 버려지던 Repair/A11yReport를 detail로 포착; resolved worker를 `ftRecord.meta.model`에 stamp; `producedPaths`(독립 actual-truth) 노출. emitter 없으면 기존과 byte-identical. |
+
+**★ CTO 거짓-관측 방지(핵심):** 적대적 리뷰가 **바로 그 R-6 갭**을 잡음 — `isWorkerAvailable`이 env 존재만 봐서, OLLAMA_BASE_URL 세팅(임박) + override `qwen3-coder:30b` 시 event/ftRecord가 `qwen3-coder:30b`를 기록하는데 실제론 static emitter가 바이트 생성(Ollama 코드경로 미존재). → **`INTEGRATED_WORKERS` 도입으로 봉쇄**: 코드경로 wired가 아니면 override해도 결정적 fallback, 기록 model = **실 바이트생산자**(requested는 별도 surface). `observability:self`에 R-6 closure tooth(override qwen+env→deterministic 기록) 3개 + prototype-pollution(→400) 2개.
+
+**적대적 리뷰:** 3 렌즈 per-finding refute-verify → **4 confirmed 전부 tooth**(MAJOR×2 R-6 availability≠integration · MAJOR prototype-pollution fail-closed 우회 · NIT stray) + **3 refuted 정확 기각**(unified-override 관용·analyze-default latent·partial-failure는 guard가 잡으면 오히려 오작동). `observability:self` **32 tooth**. 전 12-스위트 green.
+
+### 17.3 잔여 defer (관측)
+- **analyze.* 스테이지는 /generate run에서 미방출**(정직한 부재 — override는 unified vocabulary라 수용되나 no-op). analyze 이벤트는 (A)에서 analyze 라이브 시 방출.
+- **runtime verifyRunObservability 미배선**(현재 self-check tooth로만; partial-failure를 오탐하지 않도록 runtime gate는 신중히 — ② 또는 ③에서 shipped-page scope로).
+- **live cost/duration = (A) 짝**(결정적 스테이지는 즉시라 라이브 값 작음; Ollama 붙으면 빛남).
