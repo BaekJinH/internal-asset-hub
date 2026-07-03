@@ -20,7 +20,8 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import type { AnalyzeRequest } from '../contract'
 import { analyze } from '../analyze'
 import { defaultProfileRegistry, type ProfileRegistry } from '../analyze/profile-registry'
-import { createJob, getJob, getPage } from '../jobs'
+import { createJob, getJob, getPage, getEvents } from '../jobs'
+import { pipelineStructure, listWorkers, stageModelOverridesSchema, type StageModelOverrides } from '../observability'
 
 function sendJson(res: ServerResponse, status: number, body: unknown): void {
   res.writeHead(status, { 'content-type': 'application/json' })
@@ -50,6 +51,13 @@ export function createEngineServer(opts: { registry?: ProfileRegistry } = {}) {
       if (method === 'GET' && (path === '/' || path === '/health'))
         return sendJson(res, 200, { ok: true, service: 'devpilot-engine' })
 
+      // ((OBS)①) GET /pipeline/structure → the static stage DAG (no run needed; pure projection of the registry)
+      if (method === 'GET' && path === '/pipeline/structure')
+        return sendJson(res, 200, { stages: pipelineStructure() })
+
+      // ((OBS)①) GET /models → the §11 worker-model registry with computed availability (env presence only)
+      if (method === 'GET' && path === '/models') return sendJson(res, 200, { workers: listWorkers() })
+
       // POST /analyze → Phase-1 (cloud-gated: 503 until GEMINI key wired)
       if (path === '/analyze') {
         if (method !== 'POST') return sendJson(res, 405, { error: 'method not allowed' })
@@ -69,10 +77,10 @@ export function createEngineServer(opts: { registry?: ProfileRegistry } = {}) {
         }
       }
 
-      // POST /generate → deterministic job
+      // POST /generate → deterministic job (+ ((OBS)①) optional stageModelOverrides, fail-closed)
       if (path === '/generate') {
         if (method !== 'POST') return sendJson(res, 405, { error: 'method not allowed' })
-        let body: { manifestId?: unknown; pageIds?: unknown }
+        let body: { manifestId?: unknown; pageIds?: unknown; stageModelOverrides?: unknown }
         try {
           body = (await readJsonBody(req)) as typeof body
         } catch {
@@ -81,9 +89,30 @@ export function createEngineServer(opts: { registry?: ProfileRegistry } = {}) {
         if (typeof body.manifestId !== 'string')
           return sendJson(res, 400, { error: 'manifestId (string) required' })
         const pageIds = Array.isArray(body.pageIds) ? (body.pageIds as string[]) : undefined
-        const created = await createJob(body.manifestId, pageIds)
+        // ((OBS)①) per-stage worker override is FAIL-CLOSED: an unknown stage or a model outside the stage's
+        // availableModels is a 400, not a silent default.
+        let overrides: StageModelOverrides | undefined
+        if (body.stageModelOverrides !== undefined) {
+          const parsed = stageModelOverridesSchema.safeParse(body.stageModelOverrides)
+          if (!parsed.success)
+            return sendJson(res, 400, {
+              error: 'invalid stageModelOverrides',
+              issues: parsed.error.issues.map((i) => i.message),
+            })
+          overrides = parsed.data
+        }
+        const created = await createJob(body.manifestId, pageIds, overrides)
         if (!created) return sendJson(res, 404, { error: `manifest not found: ${body.manifestId}` })
         return sendJson(res, 200, created)
+      }
+
+      // ((OBS)①) GET /runs/:runId/events → the run's StageEvent stream (runId === jobId)
+      const eventsMatch = path.match(/^\/runs\/([^/]+)\/events$/)
+      if (eventsMatch) {
+        if (method !== 'GET') return sendJson(res, 405, { error: 'method not allowed' })
+        const runId = decodeURIComponent(eventsMatch[1])
+        const events = getEvents(runId)
+        return events ? sendJson(res, 200, { runId, events }) : sendJson(res, 404, { error: `run not found: ${runId}` })
       }
 
       // GET /jobs/:jobId/pages/:pageId (match before the less-specific /jobs/:jobId)
