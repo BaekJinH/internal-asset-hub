@@ -20,6 +20,7 @@
     "cushion:self": "tsx cushion.selfcheck.ts",
     "emit-escape:self": "tsx emit-escape.selfcheck.ts",
     "observability:self": "tsx observability.selfcheck.ts",
+    "observability-ui:self": "tsx observability-ui.selfcheck.ts",
     "dev": "tsx watch transport/index.ts"
   },
   "dependencies": {

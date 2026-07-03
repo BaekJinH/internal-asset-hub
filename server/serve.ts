@@ -11,24 +11,41 @@
  *   DEFAULT EMPTY registry applies — every `conformanceProfile` resolves to the host default. When a references
  *   root is provisioned, register it here (or inject via `createEngineServer({ registry })`).
  *
+ * ((OBS)②) Serves the observability dashboard at `/dashboard`, and seeds a DEMO BuildManifest (deterministic,
+ *   from the analyze fixtures) under manifestId `demo` so the dashboard's "생성 실행" works out of the box before
+ *   live analyze exists. The demo seed is a dev/UX affordance — real manifests arrive via analyze once (A) lands.
+ *
  * Config (repo-relative, NO secrets): `PORT` (default 8787), `HOST` (default 127.0.0.1 — localhost only).
  * Run: `pnpm serve`  (or `tsx serve.ts`).
  */
-import { createEngineServer } from './transport'
+import { createEngineServer, DEMO_MANIFEST_ID } from './transport'
+import { putManifest } from './jobs'
+import { buildManifestFromPhases } from './analyze'
+import { samplePlan, sampleBlueprint } from './analyze/fixtures/sample-phase-outputs'
 
 const PORT = Number(process.env.PORT ?? 8787)
 const HOST = process.env.HOST ?? '127.0.0.1'
+
+// ((OBS)②) seed a deterministic demo manifest so the dashboard is usable immediately (dev/UX affordance).
+const demo = buildManifestFromPhases(samplePlan, sampleBlueprint, {
+  spec: '(demo)',
+  designRefMode: 'none',
+  manyPages: true,
+  conformanceProfile: 'default',
+})
+putManifest({ ...demo, manifestId: DEMO_MANIFEST_ID })
 
 const server = createEngineServer()
 
 server.listen(PORT, HOST, () => {
   const base = `http://${HOST}:${PORT}`
   console.log(`▶ DevPilot engine listening on ${base}`)
-  console.log(`  GET  ${base}/health                    → { ok: true }`)
+  console.log(`  ★ 관측 대시보드:  ${base}/dashboard         (구조도 · 워커 레지스트리 · 실행 리포트)`)
+  console.log(`  GET  ${base}/pipeline/structure        → stage DAG`)
+  console.log(`  GET  ${base}/models                    → §11 worker registry (available/integrated/runnable)`)
+  console.log(`  GET  ${base}/runs/:runId/events        → StageEvent stream`)
+  console.log(`  POST ${base}/generate  {manifestId, stageModelOverrides?}  → { jobId }  (demo manifestId="${DEMO_MANIFEST_ID}")`)
   console.log(`  POST ${base}/analyze                   → BuildManifest  (503 until GEMINI key)`)
-  console.log(`  POST ${base}/generate  {manifestId}    → { jobId }  (deterministic, live)`)
-  console.log(`  GET  ${base}/jobs/:jobId               → JobStatus`)
-  console.log(`  GET  ${base}/jobs/:jobId/pages/:pageId → PageArtifact`)
   console.log(`  host SPA seam: set VITE_DEVPILOT_API_BASE_URL=${base}`)
 })
 

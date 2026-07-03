@@ -41,3 +41,5 @@ export {
   type StageEvent,
   type EmitOpts,
 } from './stage-events'
+
+export { renderDashboard, workerBadgeHtml, workerOptionLabel, type DashboardData } from './dashboard'

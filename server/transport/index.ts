@@ -21,11 +21,19 @@ import type { AnalyzeRequest } from '../contract'
 import { analyze } from '../analyze'
 import { defaultProfileRegistry, type ProfileRegistry } from '../analyze/profile-registry'
 import { createJob, getJob, getPage, getEvents } from '../jobs'
-import { pipelineStructure, listWorkers, stageModelOverridesSchema, type StageModelOverrides } from '../observability'
+import { pipelineStructure, listWorkers, renderDashboard, stageModelOverridesSchema, type StageModelOverrides } from '../observability'
+
+/** The manifestId serve.ts seeds a demo BuildManifest under, so the dashboard's "생성 실행" works out of the box. */
+export const DEMO_MANIFEST_ID = 'demo'
 
 function sendJson(res: ServerResponse, status: number, body: unknown): void {
   res.writeHead(status, { 'content-type': 'application/json' })
   res.end(JSON.stringify(body))
+}
+
+function sendHtml(res: ServerResponse, status: number, html: string): void {
+  res.writeHead(status, { 'content-type': 'text/html; charset=utf-8' })
+  res.end(html)
 }
 
 async function readJsonBody(req: IncomingMessage): Promise<unknown> {
@@ -50,6 +58,10 @@ export function createEngineServer(opts: { registry?: ProfileRegistry } = {}) {
       // health
       if (method === 'GET' && (path === '/' || path === '/health'))
         return sendJson(res, 200, { ok: true, service: 'devpilot-engine' })
+
+      // ((OBS)②) GET /dashboard → the engine's self-served observability UI (static HTML; SSR'd honest badges)
+      if (method === 'GET' && path === '/dashboard')
+        return sendHtml(res, 200, renderDashboard({ structure: pipelineStructure(), workers: listWorkers(), demoManifestId: DEMO_MANIFEST_ID }))
 
       // ((OBS)①) GET /pipeline/structure → the static stage DAG (no run needed; pure projection of the registry)
       if (method === 'GET' && path === '/pipeline/structure')
